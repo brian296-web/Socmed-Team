@@ -1,0 +1,1411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Social Media Team — Unified Dashboard</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --card-bg: #161b22;
+      --card-border: #30363d;
+      --accent: #58a6ff;
+      --accent-purple: #bc8cff;
+      --accent-green: #3fb950;
+      --accent-orange: #d29922;
+      --accent-red: #f85149;
+      --accent-pink: #f778ba;
+      --text: #c9d1d9;
+      --text-muted: #8b949e;
+      --text-bright: #f0f6fc;
+      --success: #3fb950;
+      --warn: #d29922;
+      --block: #f85149;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 1.5rem 1rem;
+      overflow-x: hidden;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+
+    header h1 {
+      font-size: 1.75rem;
+      color: var(--text-bright);
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, var(--accent), var(--accent-purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    /* ===== Team Dashboard Section ===== */
+    .section-title {
+      font-size: 1.1rem;
+      color: var(--text-bright);
+      margin: 1.5rem 0 0.75rem 0;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .team-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+      width: 100%;
+      max-width: 1100px;
+      margin-bottom: 2rem;
+    }
+
+    .agent-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      cursor: pointer;
+      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .agent-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--accent);
+      box-shadow: 0 8px 24px rgba(88, 166, 255, 0.15);
+    }
+
+    .agent-card.active {
+      border-color: var(--accent-purple);
+      box-shadow: 0 0 20px rgba(188, 140, 255, 0.3);
+    }
+
+    .agent-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .avatar-canvas-container {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: #090d11;
+      border: 2px solid var(--card-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .agent-info h3 {
+      color: var(--text-bright);
+      font-size: 1.1rem;
+      margin-bottom: 0.2rem;
+    }
+
+    .agent-info .role {
+      font-size: 0.85rem;
+      color: var(--accent);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .agent-desc {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+      margin-bottom: 1rem;
+    }
+
+    .agent-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+
+    .tag {
+      background: #21262d;
+      color: var(--text);
+      font-size: 0.75rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      border: 1px solid var(--card-border);
+    }
+
+    /* Modal (team dashboard) */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 1rem;
+    }
+
+    .modal-overlay.active { display: flex; }
+
+    .modal {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 650px;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 2rem;
+      position: relative;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 1rem; right: 1rem;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0.5rem;
+      line-height: 1;
+    }
+
+    .modal-close:hover { color: var(--text-bright); }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .modal-avatar {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      border: 3px solid var(--accent);
+      background: #090d11;
+      overflow: hidden;
+    }
+
+    .modal-title h2 {
+      color: var(--text-bright);
+      font-size: 1.5rem;
+      margin-bottom: 0.3rem;
+    }
+
+    .modal-title .role {
+      color: var(--accent-purple);
+      font-weight: 600;
+    }
+
+    .modal-section { margin-bottom: 1.5rem; }
+
+    .modal-section h4 {
+      color: var(--text-bright);
+      margin-bottom: 0.5rem;
+      font-size: 1rem;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 0.3rem;
+    }
+
+    .modal-section p, .modal-section ul {
+      font-size: 0.95rem;
+      line-height: 1.6;
+      color: var(--text);
+    }
+
+    .modal-section ul { padding-left: 1.2rem; }
+
+    .prompt-box {
+      background: #090d11;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 1rem;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.85rem;
+      color: var(--accent-green);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .btn-run {
+      background: linear-gradient(135deg, var(--accent), var(--accent-purple));
+      color: white;
+      border: none;
+      padding: 0.8rem 1.5rem;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 1rem;
+      transition: opacity 0.2s ease;
+    }
+
+    .btn-run:hover { opacity: 0.9; }
+
+    /* ===== Run Pipeline Section ===== */
+    .run-section {
+      max-width: 900px;
+      margin: 0 auto 2rem auto;
+    }
+
+    .input-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .input-card h2 {
+      font-size: 1rem;
+      color: var(--accent);
+      margin-bottom: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .input-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 1rem;
+      align-items: end;
+    }
+
+    input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      background: #090d11;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      color: var(--text-bright);
+      font-size: 1rem;
+    }
+
+    input:focus { outline: none; border-color: var(--accent); }
+
+    button.primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent-purple));
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.95rem;
+      transition: opacity 0.2s;
+    }
+
+    button.primary:hover { opacity: 0.9; }
+    button.primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    button.secondary {
+      background: var(--card-bg);
+      color: var(--text-bright);
+      border: 1px solid var(--card-border);
+      padding: 0.6rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+    }
+
+    button.secondary:hover { border-color: var(--accent); }
+
+    .pipeline {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .stage {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      overflow: hidden;
+      display: none;
+      animation: slideIn 0.3s ease;
+    }
+
+    .stage.active { display: block; }
+
+    .stage-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 1.25rem;
+      background: #090d11;
+      border-bottom: 1px solid var(--card-border);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .stage.active .stage-header { border-bottom-color: var(--card-border); }
+
+    .stage-num {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: #090d11;
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .stage.active .stage-num { background: var(--accent); color: #000; border-color: var(--accent); }
+
+    .stage-title {
+      flex: 1;
+      font-weight: 600;
+      color: var(--text-bright);
+      font-size: 1rem;
+    }
+
+    .stage.status-pending .stage-title { color: var(--text-muted); }
+    .stage.status-running .stage-title { color: var(--accent-orange); }
+    .stage.status-done .stage-title { color: var(--accent-green); }
+
+    .stage-badge {
+      font-size: 0.75rem;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      background: #21262d;
+      color: var(--text-muted);
+      border: 1px solid var(--card-border);
+    }
+
+    .stage.active .stage-badge { background: var(--accent); color: #000; border-color: var(--accent); }
+
+    .stage-body { padding: 1.25rem; display: none; }
+    .stage.active .stage-body { display: block; }
+    .stage-body.empty {
+      color: var(--text-muted);
+      text-align: center;
+      padding: 3rem 1rem;
+      font-style: italic;
+    }
+
+    /* Running stage */
+    .stage.status-running .stage-header {
+      border-color: var(--accent-orange);
+      background: rgba(210, 153, 34, 0.08);
+    }
+    .stage.status-running .stage-num {
+      background: var(--accent-orange);
+      color: #000;
+      border-color: var(--accent-orange);
+      animation: pulseNum 1.2s ease-in-out infinite;
+    }
+    .stage.status-running .stage-badge {
+      background: var(--accent-orange);
+      color: #000;
+      border-color: var(--accent-orange);
+    }
+
+    @keyframes pulseNum {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 0 rgba(210,153,34,0); }
+      50% { transform: scale(1.12); box-shadow: 0 0 10px rgba(210,153,34,0.5); }
+    }
+
+    .working-dots {
+      display: inline-flex;
+      gap: 3px;
+      align-items: center;
+    }
+    .working-dots span {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--accent-orange);
+      animation: bounce 1.2s infinite ease-in-out both;
+    }
+    .working-dots span:nth-child(1) { animation-delay: 0s; }
+    .working-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .working-dots span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); opacity: 0.6; }
+      50% { transform: translateY(-5px); opacity: 1; }
+    }
+
+    /* Output blocks */
+    .out-block { margin-bottom: 1rem; }
+
+    .out-label {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      color: var(--accent-purple);
+      margin-bottom: 0.4rem;
+      font-weight: 600;
+    }
+
+    pre, code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.85rem;
+      background: #090d11;
+      border: 1px solid var(--card-border);
+      border-radius: 6px;
+      padding: 0.75rem;
+      white-space: pre-wrap;
+      word-break: break-word;
+      color: var(--text);
+    }
+
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-bottom: 0.75rem; }
+    th { text-align: left; color: var(--text-muted); font-weight: 600; padding: 0.4rem 0.5rem; border-bottom: 1px solid var(--card-border); }
+    td { padding: 0.4rem 0.5rem; border-bottom: 1px solid #21262d; color: var(--text); }
+
+    .hook {
+      background: #090d11;
+      border-left: 3px solid var(--accent);
+      padding: 0.6rem 0.9rem;
+      margin-bottom: 0.5rem;
+      border-radius: 0 6px 6px 0;
+    }
+    .hook.star { border-left-color: var(--accent-green); }
+
+    .script-beat {
+      background: #090d11;
+      border: 1px solid var(--card-border);
+      border-radius: 6px;
+      padding: 0.6rem 0.9rem;
+      margin-bottom: 0.5rem;
+    }
+    .script-time {
+      font-size: 0.75rem;
+      color: var(--accent-orange);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      margin-bottom: 0.2rem;
+    }
+
+    .platform {
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 0.75rem;
+      margin-bottom: 0.75rem;
+      background: #090d11;
+    }
+    .platform h4 { color: var(--accent); font-size: 0.9rem; margin-bottom: 0.4rem; }
+
+    .issues { margin-bottom: 1rem; }
+    .issue {
+      padding: 0.5rem 0.75rem;
+      border-radius: 6px;
+      margin-bottom: 0.4rem;
+      font-size: 0.9rem;
+    }
+    .issue.block { background: rgba(248, 81, 73, 0.1); border-left: 3px solid var(--block); color: var(--block); }
+    .issue.warn { background: rgba(210, 153, 34, 0.1); border-left: 3px solid var(--warn); color: var(--warn); }
+    .issue.ok { background: rgba(63, 185, 80, 0.1); border-left: 3px solid var(--success); color: var(--success); }
+
+    .cta-group { display: flex; gap: 0.75rem; margin-top: 1rem; }
+
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+
+    .result-card {
+      background: #090d11;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 1rem;
+      text-align: center;
+    }
+    .result-card .val { font-size: 1.1rem; font-weight: 700; color: var(--text-bright); }
+    .result-card .lbl { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem; }
+
+    /* Progress bar */
+    .progress-wrap {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 1rem;
+      display: none;
+    }
+    .progress-wrap.active { display: block; }
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+    }
+    .progress-track {
+      height: 6px;
+      background: #21262d;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-purple));
+      border-radius: 3px;
+      transition: width 0.4s ease;
+      position: relative;
+    }
+    .progress-fill::after {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; bottom: 0; right: 0;
+      background: repeating-linear-gradient(45deg, rgba(255,255,255,0.15), rgba(255,255,255,0.15) 8px, transparent 8px, transparent 16px);
+      animation: shine 1.2s linear infinite;
+      opacity: 0.6;
+    }
+    @keyframes shine { to { background-position: 100% 0; } }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .loader {
+      display: inline-block;
+      width: 16px; height: 16px;
+      border: 2px solid var(--text-muted);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      vertical-align: middle;
+      margin-right: 0.5rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .hidden { display: none !important; }
+
+    .finish-wrap {
+      text-align: center;
+      margin-top: 2rem;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>AI Social Media Team</h1>
+    <p>Meet the employees below, then run the full pipeline from niche → published on the same page.</p>
+  </header>
+
+  <!-- ===== Run Pipeline ===== -->
+  <div class="section-title">🚀 Run the Pipeline</div>
+  <div class="run-section">
+    <div class="input-card">
+      <h2>Team Input</h2>
+      <div class="input-row">
+        <input type="text" id="inputNiche" placeholder="e.g. Money Mindset" />
+        <input type="text" id="inputTopic" placeholder="e.g. Why You Feel Rich on Payday" />
+        <button class="primary" id="btnStart">Run Team</button>
+      </div>
+      <p style="margin-top:0.75rem; color:var(--text-muted); font-size:0.85rem;">
+        The pipeline runs: Researcher → Competitor Analyst → Content Writer → Editor → Approver → Publisher.
+        Nothing publishes until you click Approve.
+      </p>
+    </div>
+
+    <div class="progress-wrap" id="progressWrap">
+      <div class="progress-label">
+        <span id="progressLabel">Starting pipeline...</span>
+        <span id="progressPct">0%</span>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    </div>
+
+    <div class="pipeline" id="pipeline"></div>
+
+    <div class="finish-wrap hidden" id="finish">
+      <div style="font-size:1.25rem; color:var(--accent-green); font-weight:700; margin-bottom:0.75rem;">Pipeline complete ✅</div>
+      <button class="secondary" id="downloadBtn" class="hidden" onclick="downloadOutput()">📥 Download content package (.docx)</button>
+      <button class="secondary" onclick="location.reload()">Run Again</button>
+    </div>
+  </div>
+
+  <!-- ===== Team Dashboard ===== -->
+  <div class="section-title">👥 The Team</div>
+  <div class="team-grid" id="teamGrid"></div>
+
+  <!-- Modal (team dashboard) -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <button class="modal-close" onclick="closeModal()">✕</button>
+      <div class="modal-header">
+        <div class="modal-avatar"><canvas id="modalCanvas" width="100" height="100"></canvas></div>
+        <div class="modal-title">
+          <h2 id="modalName"></h2>
+          <div class="role" id="modalRole"></div>
+        </div>
+      </div>
+      <div class="modal-section">
+        <h4>Mission</h4>
+        <p id="modalDesc"></p>
+      </div>
+      <div class="modal-section">
+        <h4>Key Inputs & Outputs</h4>
+        <ul id="modalSpec"></ul>
+      </div>
+      <div class="modal-section">
+        <h4>Subagent File</h4>
+        <p id="modalFile" style="font-family: monospace; color: var(--accent);"></p>
+      </div>
+      <div class="modal-section">
+        <h4>Sample Invoke Prompt</h4>
+        <div class="prompt-box" id="modalPrompt"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ============ SHARED TEAM DATA ============ */
+    const team = [
+      {
+        id: "researcher",
+        name: "Researcher",
+        role: "Content Discovery & Trends",
+        desc: "Finds top-performing YouTube videos and Google search demand for any topic.",
+        file: "agents/social-media-researcher.md",
+        color: "#58a6ff",
+        tags: ["YouTube", "Google Trends", "View Analysis", "Hooks"],
+        inputs: ["topic (required)", "niche (optional)", "max_results"],
+        outputs: ["Top YouTube videos with view counts", "Small-channel breakout hits", "Google PAA & long-tail search queries"],
+        prompt: `Agent({
+  subagent_type: "social-media-researcher",
+  description: "Research topic: morning routines for productivity",
+  prompt: "Find top YouTube videos and Google search demand for 'morning routines for productivity'."
+})`,
+        draw: drawResearcher
+      },
+      {
+        id: "competitor-analyst",
+        name: "Competitor Analyst",
+        role: "Paid Ad Intelligence",
+        desc: "Pulls competitors' active Meta & Google ads, isolates long-runners (30+ days), and breaks down video ad scripts.",
+        file: "agents/social-media-competitor-analyst.md",
+        color: "#bc8cff",
+        tags: ["Meta Ad Library", "Google Ads", "Long-Runners", "Ad Hooks"],
+        inputs: ["competitors (optional)", "niche (required if no brands)", "country"],
+        outputs: ["Long-running active ads (proven winners)", "Video ad script breakdown (hook/offer/CTA)", "Cross-competitor angle gaps"],
+        prompt: `Agent({
+  subagent_type: "social-media-competitor-analyst",
+  description: "Analyze competitor ads in AI tools niche",
+  prompt: "Analyze active Meta and Google ads for top 3 competitors in the AI video editing niche."
+})`,
+        draw: drawAnalyst
+      },
+      {
+        id: "content-writer",
+        name: "Content Writer",
+        role: "Short-Form Script & Hooks",
+        desc: "Turns research and ad data into 5 hook options, a timed short-form script (15-60s), captions, and b-roll notes.",
+        file: "agents/social-media-content-writer.md",
+        color: "#f778ba",
+        tags: ["Bold Voice", "TikTok/Reels/Shorts", "5 Hooks", "Beat Script"],
+        inputs: ["topic", "research (optional)", "competitor_analysis (optional)", "length"],
+        outputs: ["5 hook options (contrarian/curiosity/stat/etc)", "Word-for-word timed script (15/30/60s)", "Caption + hashtags + b-roll notes"],
+        prompt: `Agent({
+  subagent_type: "social-media-content-writer",
+  description: "Draft 30s TikTok script on AI video editing",
+  prompt: "Turn the research report into a 30s short-form script in a bold, provocative voice."
+})`,
+        draw: drawWriter
+      },
+      {
+        id: "editor",
+        name: "Editor",
+        role: "Multi-Platform Adapter",
+        desc: "Rewrites one finished piece across 9 social channels respecting character limits, hashtag norms, and aspect ratios.",
+        file: "agents/social-media-editor.md",
+        color: "#d29922",
+        tags: ["9 Channels", "Char Limits", "Aspect Ratios", "Hashtag Rules"],
+        inputs: ["content (required)", "channels (default: 9 platforms)", "voice_override"],
+        outputs: ["Per-channel post package (TikTok, IG Reels, YT Shorts, YT Long, X, LinkedIn, FB, Threads, Pinterest)", "Summary comparison table"],
+        prompt: `Agent({
+  subagent_type: "social-media-editor",
+  description: "Adapt script for 9 social channels",
+  prompt: "Adapt the attached short-form script for TikTok, IG Reels, YT Shorts, X, and LinkedIn."
+})`,
+        draw: drawEditor
+      },
+      {
+        id: "approver",
+        name: "Approver",
+        role: "Quality & Safety Gatekeeper",
+        desc: "Final gate before publishing. Checks facts, brand safety, platform policy, and quality. Nothing ships without your 'yes'.",
+        file: "agents/social-media-approver.md",
+        color: "#f85149",
+        tags: ["Gatekeeper", "Brand Safety", "Fact Check", "Approvals Log"],
+        inputs: ["content (required)", "brand_guidelines (optional)", "risk_tolerance"],
+        outputs: ["Channel safety scores", "Blocking / warning issue list", "Approvals log entry on explicit user 'yes'"],
+        prompt: `Agent({
+  subagent_type: "social-media-approver",
+  description: "Review content package for approval",
+  prompt: "Review the multi-platform content package for brand safety, policy, and facts."
+})`,
+        draw: drawApprover
+      },
+      {
+        id: "publisher",
+        name: "Publisher",
+        role: "Multi-Channel Execution",
+        desc: "Publishes or schedules approved content across channels. Verifies approval log before firing. Logs every action.",
+        file: "agents/social-media-publisher.md",
+        color: "#3fb950",
+        tags: ["Post Now", "Schedule", "Approval Gate", "Publish Log"],
+        inputs: ["content", "approval (required)", "action (post_now|schedule)", "schedule_time"],
+        outputs: ["Post URLs / scheduled post IDs", "Per-channel publishing log entry"],
+        prompt: `Agent({
+  subagent_type: "social-media-publisher",
+  description: "Publish approved package to TikTok and IG",
+  prompt: "Publish the approved content package to TikTok and Instagram Reels immediately."
+})`,
+        draw: drawPublisher
+      }
+    ];
+
+    /* ============ TEAM DASHBOARD INIT ============ */
+    function initTeam() {
+      const grid = document.getElementById('teamGrid');
+      const animators = [];
+
+      team.forEach((member) => {
+        const card = document.createElement('div');
+        card.className = 'agent-card';
+        card.onclick = () => openModal(member);
+
+        card.innerHTML = `
+          <div class="agent-header">
+            <div class="avatar-canvas-container">
+              <canvas id="canvas-${member.id}" width="64" height="64"></canvas>
+            </div>
+            <div class="agent-info">
+              <h3>${member.name}</h3>
+              <div class="role" style="color: ${member.color}">${member.role}</div>
+            </div>
+          </div>
+          <div class="agent-desc">${member.desc}</div>
+          <div class="agent-tags">
+            ${member.tags.map(t => `<span class="tag">${t}</span>`).join('')}
+          </div>
+        `;
+        grid.appendChild(card);
+
+        const canvas = document.getElementById(`canvas-${member.id}`);
+        const ctx = canvas.getContext('2d');
+        animators.push({ member, canvas, ctx });
+      });
+
+      return animators;
+    }
+
+    /* ============ ANIMATION LOOP ============ */
+    let t = 0;
+    let modalActiveAgent = null;
+    const animators = initTeam();
+
+    const modalCanvas = document.getElementById('modalCanvas');
+    const modalCtx = modalCanvas.getContext('2d');
+
+    function animate() {
+      t += 0.03;
+      animators.forEach(a => {
+        a.ctx.clearRect(0, 0, 64, 64);
+        a.member.draw(a.ctx, 32, 32, 64, t, a.member.color);
+      });
+      if (modalActiveAgent) {
+        modalCtx.clearRect(0, 0, 100, 100);
+        modalActiveAgent.draw(modalCtx, 50, 50, 100, t, modalActiveAgent.color);
+      }
+      requestAnimationFrame(animate);
+    }
+    requestAnimationFrame(animate);
+
+    /* ============ 2D AVATAR DRAWERS ============ */
+    function drawResearcher(ctx, cx, cy, size, t, color) {
+      const r = size * 0.38;
+      const pulseR = (t * 15) % r;
+      ctx.beginPath(); ctx.arc(cx, cy, pulseR, 0, Math.PI * 2);
+      ctx.strokeStyle = color; ctx.lineWidth = 1;
+      ctx.globalAlpha = 1 - (pulseR / r); ctx.stroke(); ctx.globalAlpha = 1;
+      ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.stroke();
+      const angle = t * 2;
+      ctx.beginPath(); ctx.moveTo(cx, cy);
+      ctx.lineTo(cx + Math.cos(angle) * r, cy + Math.sin(angle) * r);
+      ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.stroke();
+      for (let i = 0; i < 3; i++) {
+        const da = angle - (i * 0.4);
+        const dr = r * 0.6;
+        ctx.beginPath(); ctx.arc(cx + Math.cos(da) * dr, cy + Math.sin(da) * dr, 2, 0, Math.PI * 2);
+        ctx.fillStyle = color; ctx.fill();
+      }
+    }
+
+    function drawAnalyst(ctx, cx, cy, size, t, color) {
+      const r = size * 0.36;
+      ctx.save(); ctx.translate(cx, cy); ctx.rotate(t * 0.8);
+      ctx.beginPath();
+      ctx.arc(0, 0, r, 0, Math.PI * 0.4);
+      ctx.arc(0, 0, r, Math.PI * 0.5, Math.PI * 0.9);
+      ctx.arc(0, 0, r, Math.PI, Math.PI * 1.4);
+      ctx.arc(0, 0, r, Math.PI * 1.5, Math.PI * 1.9);
+      ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(-r * 0.8, 0); ctx.lineTo(-r * 0.3, 0);
+      ctx.moveTo(r * 0.3, 0); ctx.lineTo(r * 0.8, 0);
+      ctx.moveTo(0, -r * 0.8); ctx.lineTo(0, -r * 0.3);
+      ctx.moveTo(0, r * 0.3); ctx.lineTo(0, r * 0.8);
+      ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.stroke();
+      ctx.restore();
+      const lockS = 3 + Math.sin(t * 4) * 1.5;
+      ctx.beginPath(); ctx.arc(cx, cy, lockS, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill();
+    }
+
+    function drawWriter(ctx, cx, cy, size, t, color) {
+      const pw = size * 0.45; const ph = size * 0.55;
+      ctx.strokeStyle = '#30363d'; ctx.lineWidth = 1.5;
+      ctx.strokeRect(cx - pw/2, cy - ph/2, pw, ph);
+      for (let i = 0; i < 3; i++) {
+        const ly = cy - ph/3 + (i * 10);
+        const progress = Math.min(1, Math.max(0, (t * 1.5 - i * 0.5) % 2.5));
+        const lw = (pw * 0.7) * progress;
+        ctx.beginPath(); ctx.moveTo(cx - pw * 0.35, ly); ctx.lineTo(cx - pw * 0.35 + lw, ly);
+        ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.stroke();
+      }
+      const penX = cx - pw * 0.35 + ((t * 20) % (pw * 0.7));
+      const penY = cy + Math.sin(t * 3) * 2;
+      ctx.beginPath(); ctx.arc(penX, penY, 2.5, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill();
+    }
+
+    function drawEditor(ctx, cx, cy, size, t, color) {
+      ctx.save(); ctx.translate(cx, cy); ctx.rotate(t * 0.5);
+      const teeth = 6; const rOuter = size * 0.35; const rInner = size * 0.25;
+      ctx.beginPath();
+      for (let i = 0; i < teeth; i++) {
+        const a1 = (i / teeth) * Math.PI * 2; const a2 = a1 + (Math.PI / teeth) * 0.5; const a3 = a1 + (Math.PI / teeth);
+        ctx.lineTo(Math.cos(a1) * rOuter, Math.sin(a1) * rOuter);
+        ctx.lineTo(Math.cos(a2) * rOuter, Math.sin(a2) * rOuter);
+        ctx.lineTo(Math.cos(a2) * rInner, Math.sin(a2) * rInner);
+        ctx.lineTo(Math.cos(a3) * rInner, Math.sin(a3) * rInner);
+      }
+      ctx.closePath(); ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.stroke(); ctx.restore();
+      const offset = Math.sin(t * 2) * 3;
+      ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.strokeRect(cx - 8 + offset, cy - 8 - offset, 16, 16);
+    }
+
+    function drawApprover(ctx, cx, cy, size, t, color) {
+      const r = size * 0.36;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - r); ctx.lineTo(cx + r * 0.8, cy - r * 0.5); ctx.lineTo(cx + r * 0.8, cy + r * 0.2);
+      ctx.quadraticCurveTo(cx, cy + r * 0.9, cx, cy + r * 0.9); ctx.quadraticCurveTo(cx, cy + r * 0.9, cx - r * 0.8, cy + r * 0.2);
+      ctx.lineTo(cx - r * 0.8, cy - r * 0.5); ctx.closePath();
+      ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.stroke();
+      const checkProgress = Math.abs(Math.sin(t * 1.5));
+      ctx.beginPath(); ctx.moveTo(cx - 8, cy); ctx.lineTo(cx - 2, cy + 6 * checkProgress); ctx.lineTo(cx + 8 * checkProgress, cy - 6 * checkProgress);
+      ctx.strokeStyle = color; ctx.lineWidth = 2.5; ctx.stroke();
+    }
+
+    function drawPublisher(ctx, cx, cy, size, t, color) {
+      for (let i = 1; i <= 3; i++) {
+        const waveR = ((t * 20 + i * 12) % 35);
+        ctx.beginPath(); ctx.arc(cx, cy, waveR, 0, Math.PI * 2);
+        ctx.strokeStyle = color; ctx.lineWidth = 1.5;
+        ctx.globalAlpha = Math.max(0, 1 - (waveR / 35)); ctx.stroke(); ctx.globalAlpha = 1;
+      }
+      ctx.beginPath(); ctx.arc(cx, cy, 5, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill();
+    }
+
+    /* ============ MODAL ============ */
+    function openModal(agent) {
+      modalActiveAgent = agent;
+      document.getElementById('modalName').innerText = agent.name;
+      document.getElementById('modalRole').innerText = agent.role;
+      document.getElementById('modalDesc').innerText = agent.desc;
+      document.getElementById('modalFile').innerText = agent.file;
+      document.getElementById('modalPrompt').innerText = agent.prompt;
+      document.getElementById('modalSpec').innerHTML = `
+        <li><strong>Inputs:</strong> ${agent.inputs.join(', ')}</li>
+        <li><strong>Outputs:</strong> ${agent.outputs.join(', ')}</li>
+      `;
+      document.getElementById('modalOverlay').classList.add('active');
+    }
+
+    function closeModal() {
+      modalActiveAgent = null;
+      document.getElementById('modalOverlay').classList.remove('active');
+    }
+    document.getElementById('modalOverlay').onclick = (e) => { if (e.target.id === 'modalOverlay') closeModal(); };
+
+    /* ============ PIPELINE RUNNER ============ */
+    const STAGE_NAMES = [
+      { id: 'researcher', name: 'Researcher', badge: 'YouTube + Google demand' },
+      { id: 'analyst', name: 'Competitor Analyst', badge: 'Meta & Google ads' },
+      { id: 'writer', name: 'Content Writer', badge: 'Hooks + script' },
+      { id: 'editor', name: 'Editor', badge: '9 platforms' },
+      { id: 'approver', name: 'Approver', badge: 'Quality gate' },
+      { id: 'publisher', name: 'Publisher', badge: 'Post / schedule' }
+    ];
+
+    let niche = '', topic = '';
+    let pipelineData = {};
+
+    const pipelineEl = document.getElementById('pipeline');
+    const btnStart = document.getElementById('btnStart');
+    const inputNiche = document.getElementById('inputNiche');
+    const inputTopic = document.getElementById('inputTopic');
+    const progressWrap = document.getElementById('progressWrap');
+    const progressLabel = document.getElementById('progressLabel');
+    const progressPct = document.getElementById('progressPct');
+    const progressFill = document.getElementById('progressFill');
+
+    function initPipeline() {
+      pipelineEl.innerHTML = '';
+      STAGE_NAMES.forEach((s, i) => {
+        const stage = document.createElement('div');
+        stage.className = `stage status-pending`;
+        stage.id = 'stage-' + s.id;
+        stage.innerHTML = `
+          <div class="stage-header" onclick="toggleStage('${s.id}')">
+            <div class="stage-num">${i+1}</div>
+            <div class="stage-title">${s.name}</div>
+            <div class="stage-badge">${s.badge}</div>
+          </div>
+          <div class="stage-body empty" id="body-${s.id}">Waiting for input...</div>
+        `;
+        pipelineEl.appendChild(stage);
+      });
+    }
+
+    function setStageStatus(id, status) {
+      const el = document.getElementById('stage-' + id);
+      el.className = `stage status-${status}`;
+    }
+
+    function toggleStage(id) {
+      const body = document.getElementById('body-' + id);
+      const stage = document.getElementById('stage-' + id);
+      const isOpen = body.style.display !== 'none' && body.style.display !== '';
+      document.querySelectorAll('.stage-body').forEach(b => { b.style.display = 'none'; });
+      if (!isOpen) { body.style.display = 'block'; stage.classList.add('open'); } else { stage.classList.remove('open'); }
+    }
+
+    function showStage(index) {
+      document.querySelectorAll('.stage').forEach((s, i) => { s.classList.toggle('active', i === index); });
+      if (index >= STAGE_NAMES.length) {
+        document.getElementById('finish').classList.remove('hidden');
+        return;
+      }
+    }
+
+    async function runPipeline() {
+      niche = inputNiche.value.trim();
+      topic = inputTopic.value.trim();
+      if (!niche || !topic) { alert('Please enter both niche and topic.'); return; }
+
+      btnStart.disabled = true;
+      initPipeline();
+      showStage(0);
+
+      const totalStages = STAGE_NAMES.length;
+      let stageIndex = 0;
+
+      function setProgress(label, pct) {
+        progressWrap.classList.add('active');
+        progressLabel.innerText = label;
+        progressPct.innerText = pct + '%';
+        progressFill.style.width = pct + '%';
+      }
+
+      setProgress('Starting pipeline...', 0);
+
+      stageIndex++; setProgress('Researcher — YouTube + Google demand', Math.round((stageIndex - 1) / totalStages * 100));
+      await runStage('researcher', () => researcherStage(niche, topic), setProgress);
+
+      stageIndex++; setProgress('Competitor Analyst — Meta & Google ads', Math.round((stageIndex - 1) / totalStages * 100));
+      await runStage('analyst', () => analystStage(niche), setProgress);
+
+      stageIndex++; setProgress('Content Writer — hooks & script', Math.round((stageIndex - 1) / totalStages * 100));
+      await runStage('writer', () => writerStage(pipelineData.researcher, pipelineData.analyst, topic), setProgress);
+
+      stageIndex++; setProgress('Editor — 9 platform packages', Math.round((stageIndex - 1) / totalStages * 100));
+      await runStage('editor', () => editorStage(pipelineData.writer), setProgress);
+
+      setProgress('Approver — waiting for your decision', Math.round(stageIndex / totalStages * 100));
+      await runStage('approver', () => approverStage(pipelineData.editor), null, true);
+
+      stageIndex++; setProgress('Publisher — posting to all channels', Math.round(stageIndex / totalStages * 100));
+      await runStage('publisher', () => publisherStage(pipelineData.editor), setProgress);
+
+      setProgress('Pipeline complete ✅', 100);
+      btnStart.disabled = false;
+      document.getElementById('downloadBtn').classList.remove('hidden');
+    }
+
+    async function runStage(id, fn, progressCb, manual = false) {
+      setStageStatus(id, 'running');
+      showStage(STAGE_NAMES.findIndex(s => s.id === id));
+      const body = document.getElementById('body-' + id);
+      body.innerHTML = `
+        <div style="display:flex; align-items:center; gap:0.75rem; padding:1.25rem 0; color:var(--text-muted); font-style:italic;">
+          <div class="loader"></div><span>Running ${id}…</span>
+        </div>`;
+      await new Promise(r => setTimeout(r, 600));
+      try {
+        const result = await fn();
+        pipelineData[id] = result;
+        setStageStatus(id, 'done');
+        body.innerHTML = result.html;
+        if (progressCb) progressCb(id + ' complete', null);
+        if (!manual) {
+          await new Promise(r => setTimeout(r, 700));
+          const next = STAGE_NAMES.findIndex(s => s.id === id) + 1;
+          showStage(next);
+        }
+      } catch (e) {
+        setStageStatus(id, 'pending');
+        body.innerHTML = '<div style="color:var(--accent-red);">Error: ' + e.message + '</div>';
+      }
+    }
+
+    function escapeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+    function topicPlaceholder() { return topic || 'this topic'; }
+
+    /* ============ STAGE GENERATORS ============ */
+    async function researcherStage(niche, topic) {
+      const hooks = [`${topic} for beginners`, `${niche}: ${topic} explained`, `How to ${topic} in ${niche}`, `${topic}: complete guide 2026`, `Best ${topic} tools for ${niche}`];
+      const rows = hooks.map((h, i) => {
+        const views = Math.floor(Math.pow(10, 5 + Math.random() * 2));
+        const date = `2026-0${1+i}-${10+i}`;
+        return `<tr><td>${i+1}</td><td>${escapeHtml(h)}</td><td>Channel ${i+1}</td><td>${views.toLocaleString()}</td><td>${escapeHtml(date)}</td><td><a href="#" style="color:var(--accent); font-size:0.8rem;">watch</a></td><td style="font-size:0.8rem; color:var(--text-muted);">${i===0 ? 'Breakout: small channel, big views' : ''}</td></tr>`;
+      }).join('');
+      const google = [`how to ${topic}`, `${topic} vs alternatives`, `best ${topic} for ${niche}`, `${topic} tutorial`, `${topic} pricing`];
+      const questions = [`Is ${topic} worth it?`, `How long does ${topic} take?`, `Who is ${topic} for?`];
+      return { html: `
+        <div class="out-block"><div class="out-label">YouTube — top performers</div>
+        <table><thead><tr><th>#</th><th>Title</th><th>Channel</th><th>Views</th><th>Published</th><th>Link</th><th>Angle note</th></tr></thead><tbody>${rows}</tbody></table></div>
+        <div class="out-block"><div class="out-label">Google — search demand</div>
+        <div><strong>Broad:</strong> ${google.slice(0,3).map(escapeHtml).join(', ')}</div>
+        <div><strong>Long-tail:</strong> ${google.slice(3).map(escapeHtml).join(', ')}</div>
+        <div><strong>Questions (PAA):</strong> ${questions.map(escapeHtml).join(', ')}</div></div>
+        <div class="out-block"><div class="out-label">Key takeaways</div><ul>
+        <li>Angle "<strong>${escapeHtml(topic)}</strong>" is saturated in ${escapeHtml(niche)}.</li>
+        <li>Small-channel breakout video shows an underserved hook opportunity.</li>
+        <li>Top Google question: "${escapeHtml(questions[0])}" — strong title candidate.</li></ul></div>` };
+    }
+
+    async function analystStage(niche) {
+      const brands = ['Ramsey Solutions', 'YNAB', 'Intuit Mint', 'Clever Girl Finance'];
+      const rows = brands.map((b, i) => {
+        const runtime = 15 + i * 12; const isLong = runtime >= 30;
+        return `<tr><td>${i+1}</td><td style="color:var(--accent-purple); font-weight:600;">${escapeHtml(b)}</td><td>Video</td><td>${runtime} days</td><td>${escapeHtml(`${topicPlaceholder()} hook: stop ${niche} mistakes`)}</td><td>Learn more</td><td><a href="#" style="color:var(--accent); font-size:0.8rem;">library</a></td><td>${isLong ? '<span style="color:var(--accent-green); font-weight:700;">LONG-RUNNER</span>' : ''}</td></tr>`;
+      }).join('');
+      return { html: `
+        <div class="out-block"><div class="out-label">Competitors analyzed</div><ul>${brands.map(b => `<li>${escapeHtml(b)}</li>`).join('')}</ul></div>
+        <div class="out-block"><div class="out-label">Meta Ad Library — active ads</div>
+        <table><thead><tr><th>#</th><th>Brand</th><th>Type</th><th>Runtime</th><th>Hook / copy</th><th>CTA</th><th>Link</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table></div>
+        <div class="out-block"><div class="out-label">Video ad breakdown (long-runner)</div>
+        <div class="script-beat"><div class="script-time">Hook (0-3s)</div><div>"Stop making these ${escapeHtml(niche)} mistakes."</div></div>
+        <div class="script-beat"><div class="script-time">Message (3-10s)</div><div>Most ${escapeHtml(niche)} creators waste hours on ${escapeHtml(topicPlaceholder())}.</div></div>
+        <div class="script-beat"><div class="script-time">Proof (10-20s)</div><div>Before/after demo + testimonial.</div></div>
+        <div class="script-beat"><div class="script-time">CTA (20-25s)</div><div>Link in bio — start free today.</div></div></div>
+        <div class="out-block"><div class="out-label">Cross-competitor patterns</div><ul>
+        <li>Common hook: "stop making mistakes" / contrarian framing.</li>
+        <li>Common offer: free trial / link in bio.</li>
+        <li>Gap: nobody is teaching ${escapeHtml(topicPlaceholder())} step-by-step.</li></ul></div>` };
+    }
+
+    async function writerStage(research, analyst, topic) {
+      const hooks = [
+        `Most ${escapeHtml(niche)} creators are doing ${escapeHtml(topic)} wrong.`,
+        `The ${escapeHtml(topic)} hack nobody is talking about.`,
+        `I tried ${escapeHtml(topic)} for 30 days — here's what happened.`,
+        `${escapeHtml(topic)} is dead. Do this instead.`,
+        `Stop wasting time on ${escapeHtml(topic)}.`
+      ];
+      const script = [
+        { time: '0-3s', text: 'Most creators are doing ' + escapeHtml(topic) + ' wrong — here is why.', note: 'Pattern interrupt, direct challenge' },
+        { time: '3-10s', text: 'You spend hours on it, but the results never show up.', note: 'Agitate the pain' },
+        { time: '10-25s', text: 'The fix is a 2-minute change to your workflow.', note: 'Reveal the solution' },
+        { time: '25-35s', text: 'Watch this: before vs after using the new method.', note: 'Proof / demo' },
+        { time: '35-45s', text: 'Comment "WORKFLOW" and I will send you the template.', note: 'Single CTA' },
+        { time: '45-50s', text: 'Follow for more ' + escapeHtml(niche) + ' tips.', note: 'Close' }
+      ];
+      const caption = `${escapeHtml(topic)} is dead — do this instead.\n\nMost ${escapeHtml(niche)} creators waste hours on it with zero results. The fix takes 2 minutes.\n\nComment WORKFLOW for the template.\n\n#${escapeHtml(niche.replace(/\s+/g,''))} #${escapeHtml(topic.replace(/\s+/g,''))} #SocialMediaTips #ContentStrategy`;
+      return { html: `
+        <div class="out-block"><div class="out-label">5 hooks</div>
+        ${hooks.map((h, i) => `<div class="hook ${i===0?'star':''}">${i+1}. ${h} ${i===0?'★ RECOMMENDED':''}</div>`).join('')}
+        </div>
+        <div class="out-block"><div class="out-label">Timed script (50s)</div>
+        ${script.map(b => `<div class="script-beat"><div class="script-time">${b.time}</div><div>${b.text}</div><div style="font-size:0.8rem; color:var(--text-muted); margin-top:0.2rem;">${b.note}</div></div>`).join('')}
+        </div>
+        <div class="out-block"><div class="out-label">Caption</div><pre>${caption}</pre></div>
+        <div class="out-block"><div class="out-label">Production notes</div><ul>
+        <li>B-roll: screen recording of the 2-minute workflow change.</li><li>Music: high energy, fast beat.</li><li>Text overlay: big, bold captions synced to voiceover.</li></ul></div>`, hooks, script, caption };
+    }
+
+    async function editorStage(writer) {
+      const platforms = [
+        { name: 'TikTok', hook: writer.hooks[0], body: 'Most creators are doing this wrong. Comment WORKFLOW for the template.', tags: 3, len: '30s', aspect: '9:16' },
+        { name: 'Instagram Reels', hook: writer.hooks[1], body: 'The fix takes 2 minutes. Watch the before/after.', tags: 5, len: '30s', aspect: '9:16' },
+        { name: 'YouTube Shorts', hook: writer.hooks[2], body: 'I tried this for 30 days. Full breakdown below.', tags: 3, len: '60s', aspect: '9:16' },
+        { name: 'X (Twitter)', hook: writer.hooks[3], body: 'This 2-minute change replaced hours of work.', tags: 1, len: '280 chars', aspect: '1:1' },
+        { name: 'LinkedIn', hook: writer.hooks[4], body: 'After testing this workflow for 30 days, here is what I learned about efficiency in content creation.', tags: 3, len: '60s', aspect: '16:9' },
+        { name: 'Facebook', hook: writer.hooks[0], body: 'Stop wasting time. Try this instead — full guide in comments.', tags: 2, len: '60s', aspect: '16:9' },
+        { name: 'Threads', hook: writer.hooks[1], body: 'This replaced hours of work. 2 minutes, that is all.', tags: 0, len: '500 chars', aspect: 'n/a' },
+        { name: 'Pinterest', hook: 'Content workflow tips', body: 'Save this 2-minute content workflow for later.', tags: 3, len: '15s', aspect: '2:3' }
+      ];
+      const rows = platforms.map(p => `<tr><td>${escapeHtml(p.name)}</td><td style="font-size:0.8rem;">${escapeHtml(p.body.slice(0,40))}...</td><td>${p.tags}</td><td>${p.len}</td><td>${p.aspect}</td></tr>`).join('');
+      const cards = platforms.map(p => `<div class="platform"><h4>${escapeHtml(p.name)}</h4><div style="font-size:0.85rem; margin-bottom:0.3rem;"><strong>Hook:</strong> ${escapeHtml(p.hook)}</div><div style="font-size:0.85rem; margin-bottom:0.3rem;"><strong>Caption:</strong> ${escapeHtml(p.body)}</div><div style="font-size:0.8rem; color:var(--text-muted);"><strong>Hashtags:</strong> ${p.tags} &nbsp;|&nbsp; <strong>Length:</strong> ${p.len} &nbsp;|&nbsp; <strong>Aspect:</strong> ${p.aspect}</div></div>`).join('');
+      return { html: `
+        <div class="out-block"><div class="out-label">Summary table</div>
+        <table><thead><tr><th>Channel</th><th>Caption (preview)</th><th>Hashtags</th><th>Length</th><th>Aspect</th></tr></thead><tbody>${rows}</tbody></table></div>
+        <div class="out-block"><div class="out-label">Per-channel packages</div>${cards}</div>`, platforms };
+    }
+
+    async function approverStage(editor) {
+      return { html: `
+        <div class="out-block"><div class="out-label">Review results</div>
+        <div class="issue ok"><strong>✅ TikTok</strong> — Pass. Hook strong, within limits.</div>
+        <div class="issue ok"><strong>✅ Instagram Reels</strong> — Pass. Hashtag count OK.</div>
+        <div class="issue warn"><strong>⚠️ YouTube Shorts</strong> — Caption under 100 char title recommended.</div>
+        <div class="issue ok"><strong>✅ X (Twitter)</strong> — Pass. 280 chars OK.</div>
+        <div class="issue ok"><strong>✅ LinkedIn</strong> — Pass. Professional tone preserved.</div>
+        <div class="issue ok"><strong>✅ Facebook</strong> — Pass.</div>
+        <div class="issue ok"><strong>✅ Threads</strong> — Pass.</div>
+        <div class="issue ok"><strong>✅ Pinterest</strong> — Pass.</div></div>
+        <div class="out-block"><div class="out-label">Overall status</div>
+        <div style="color:var(--accent-green); font-weight:700;">⚠️ NEEDS YOUR APPROVAL — nothing ships until you say yes</div></div>
+        <div class="cta-group">
+          <button class="primary" id="btnApprove">Approve &gt; Publisher</button>
+          <button class="secondary" id="btnRevise">Request revision</button>
+        </div>
+        <p style="margin-top:0.75rem; color:var(--text-muted); font-size:0.85rem;">Decision logged on approve.</p>` };
+    }
+
+    async function publisherStage(editor) {
+      const results = ['TikTok','Instagram Reels','YouTube Shorts','X (Twitter)','LinkedIn','Facebook','Threads','Pinterest'];
+      const cards = results.map(ch => `<div class="result-card"><div class="val">✅ Posted</div><div class="lbl">${escapeHtml(ch)}</div><div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.4rem;">posted</div></div>`).join('');
+      return { html: `
+        <div class="out-block"><div class="out-label">Published to all 8 channels</div><div class="results-grid">${cards}</div></div>
+        <div class="out-block"><div class="out-label">Log entry</div><pre>[2026-11-26] ACTION: posted | Content: ${escapeHtml(topic)} | Channels: 8 | Result: all ✅</pre></div>` };
+    }
+
+    /* ============ WIRE UP ============ */
+    btnStart.addEventListener('click', runPipeline);
+    document.getElementById('btnApprove').addEventListener('click', () => {
+      setStageStatus('approver', 'done');
+      const next = STAGE_NAMES.findIndex(s => s.id === 'approver') + 1;
+      showStage(next);
+      runStage('publisher', () => publisherStage(pipelineData.editor));
+    });
+    document.getElementById('btnRevise').addEventListener('click', () => {
+      alert('Revision sent back to Content Writer. (In a real run, the writer would regenerate and re-submit to the Approver.)');
+    });
+
+    initPipeline();
+  </script>
+
+  <script>
+    /* ============ DOWNLOAD (.docx with .txt fallback) ============ */
+    function htmlToText(html) {
+      return html
+        .replace(/<br\s*\/?>/gi, '\n').replace(/<\/p>/gi, '\n').replace(/<\/li>/gi, '\n• ')
+        .replace(/<\/tr>/gi, '\n').replace(/<\/td>/gi, ' | ').replace(/<\/th>/gi, ' | ')
+        .replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+        .replace(/\s+/g, ' ').trim();
+    }
+    function docSection(title, body) { return '\n' + title + '\n' + '='.repeat(title.length) + '\n\n' + body + '\n'; }
+
+    function downloadOutput() {
+      // Try .docx via external library
+      if (window.docx && window.docx.Document && window.docx.Packer) {
+        try {
+          const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, HeadingLevel, AlignmentType, WidthType } = window.docx;
+
+          const doc = new Document({
+            sections: [{
+              properties: {},
+              children: [
+                new Paragraph({
+                  text: 'AI SOCIAL MEDIA TEAM — CONTENT PACKAGE',
+                  heading: HeadingLevel.TITLE,
+                  alignment: AlignmentType.CENTER,
+                  spacing: { after: 200 }
+                }),
+                new Paragraph({
+                  children: [
+                    new TextRun({ text: 'Niche: ', bold: true }),
+                    new TextRun({ text: niche })
+                  ],
+                  spacing: { after: 100 }
+                }),
+                new Paragraph({
+                  children: [
+                    new TextRun({ text: 'Topic: ', bold: true }),
+                    new TextRun({ text: topic })
+                  ],
+                  spacing: { after: 100 }
+                }),
+                new Paragraph({
+                  children: [
+                    new TextRun({ text: 'Generated: ', bold: true }),
+                    new TextRun({ text: new Date().toLocaleString() })
+                  ],
+                  spacing: { after: 400 }
+                })
+              ]
+            }]
+          });
+
+          const stageTitles = {
+            researcher: '1. RESEARCHER — YouTube + Google Demand',
+            analyst: '2. COMPETITOR ANALYST — Meta & Google Ads',
+            writer: '3. CONTENT WRITER — Hooks & Script',
+            editor: '4. EDITOR — Multi-Platform Packages',
+            approver: '5. APPROVER — Review Results',
+            publisher: '6. PUBLISHER — Publishing Results'
+          };
+
+          STAGE_NAMES.forEach(s => {
+            const data = pipelineData[s.id];
+            if (!data) return;
+            doc.addSection({
+              properties: {},
+              children: [
+                new Paragraph({
+                  text: stageTitles[s.id],
+                  heading: HeadingLevel.HEADING_1,
+                  spacing: { before: 400, after: 200 }
+                })
+              ]
+            });
+            const temp = document.createElement('div');
+            temp.innerHTML = data.html;
+            function walk(node, parent) {
+              if (node.nodeType === Node.TEXT_NODE) {
+                const text = node.textContent.trim();
+                if (text) parent.addRun(new TextRun({ text }));
+                return;
+              }
+              if (node.nodeType !== Node.ELEMENT_NODE) return;
+              const tag = node.tagName.toLowerCase();
+              if (tag === 'h4' || tag === 'h3' || tag === 'h2') {
+                parent.addParagraph({ text: node.textContent.trim(), heading: HeadingLevel.HEADING_2, spacing: { before: 200, after: 100 } });
+              } else if (tag === 'p') {
+                const p = parent.addParagraph({ spacing: { after: 100 } });
+                node.childNodes.forEach(cn => walk(cn, p));
+              } else if (tag === 'br') {
+                parent.addRun(new TextRun({ break: 1 }));
+              } else if (tag === 'strong' || tag === 'b') {
+                const r = parent.addRun(new TextRun({ bold: true }));
+                node.childNodes.forEach(cn => walk(cn, r));
+              } else if (tag === 'em' || tag === 'i') {
+                const r = parent.addRun(new TextRun({ italics: true }));
+                node.childNodes.forEach(cn => walk(cn, r));
+              } else if (tag === 'ul') {
+                node.childNodes.forEach(li => {
+                  if (li.tagName && li.tagName.toLowerCase() === 'li') {
+                    const text = li.textContent.trim();
+                    if (text) parent.addParagraph({ text: '• ' + text, spacing: { after: 80 } });
+                  }
+                });
+              } else if (tag === 'table') {
+                const rows = [];
+                node.querySelectorAll('tr').forEach(tr => {
+                  const cells = [];
+                  tr.querySelectorAll('th, td').forEach(td => cells.push(td.textContent.trim()));
+                  rows.push(cells);
+                });
+                if (rows.length > 0) {
+                  const maxCols = Math.max(...rows.map(r => r.length));
+                  const table = new Table({
+                    width: { size: 100, type: WidthType.PERCENTAGE },
+                    rows: rows.map(cells => new TableRow({
+                      children: cells.map(cellText => new TableCell({
+                        width: { size: 100 / maxCols, type: WidthType.PERCENTAGE },
+                        children: [new Paragraph({ text: cellText, spacing: { after: 50 } })]
+                      }))
+                    }))
+                  });
+                  parent.addTable(table);
+                }
+              } else if (tag === 'div' || tag === 'span') {
+                node.childNodes.forEach(cn => walk(cn, parent));
+              } else {
+                node.childNodes.forEach(cn => walk(cn, parent));
+              }
+            }
+            temp.childNodes.forEach(cn => walk(cn, doc));
+          });
+
+          Packer.toBlob(doc).then(blob => {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = 'social-media-content-package.docx';
+            document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+          });
+          return;
+        } catch (e) {
+          console.error('docx generation failed, falling back to .txt', e);
+        }
+      }
+
+      // Fallback: structured .txt document (always works)
+      const lines = [];
+      lines.push('AI SOCIAL MEDIA TEAM — CONTENT PACKAGE');
+      lines.push('=======================================');
+      lines.push('Niche: ' + escapeHtml(niche));
+      lines.push('Topic: ' + escapeHtml(topic));
+      lines.push('Generated: ' + new Date().toLocaleString());
+      lines.push('');
+      const stageTitles = {
+        researcher: '1. RESEARCHER — YouTube + Google Demand',
+        analyst: '2. COMPETITOR ANALYST — Meta & Google Ads',
+        writer: '3. CONTENT WRITER — Hooks & Script',
+        editor: '4. EDITOR — Multi-Platform Packages',
+        approver: '5. APPROVER — Review Results',
+        publisher: '6. PUBLISHER — Publishing Results'
+      };
+      STAGE_NAMES.forEach(s => {
+        const data = pipelineData[s.id];
+        if (!data) return;
+        lines.push(docSection(stageTitles[s.id], htmlToText(data.html)));
+      });
+      const blob = new Blob([lines.join('')], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'social-media-content-package.txt';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+    }
+  </script>
+</body>
+</html>
