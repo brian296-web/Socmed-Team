@@ -1115,7 +1115,7 @@
         if (!data) return;
         parts.push(stageTitles[s.id]);
         parts.push('='.repeat(stageTitles[s.id].length));
-        parts.push(htmlToText(data.html));
+        parts.push(data.text || htmlToText(data.html));
         parts.push('');
       });
 
@@ -1161,6 +1161,36 @@
       }).join('');
       const google = [`how to ${topic}`, `${topic} vs alternatives`, `best ${topic} for ${niche}`, `${topic} tutorial`, `${topic} pricing`];
       const questions = [`Is ${topic} worth it?`, `How long does ${topic} take?`, `Who is ${topic} for?`];
+      const textRows = hooks.map((h, i) => {
+        const views = Math.floor(Math.pow(10, 5 + Math.random() * 2));
+        const date = `2026-0${1+i}-${10+i}`;
+        const note = i === 0 ? 'Breakout — small channel, big views' : '';
+        return `${i+1}\t${escapeHtml(h)}\tChannel ${i+1}\t${views.toLocaleString()}\t${escapeHtml(date)}\t${note}`;
+      }).join('\n');
+      const text = `Stage 1 — Researcher: YouTube + Google Demand
+
+YouTube — top performers
+#\tTitle\tChannel\tViews\tPublished\tAngle note
+${textRows}
+
+YouTube — breakout (small channel, big views)
+
+Channel 1 — "${escapeHtml(hooks[0])}" (~${Math.floor(Math.pow(10, 5 + Math.random() * 2))} views from a small channel). Signal: this angle is underserved and resonates.
+
+Google — search demand
+
+Broad queries: ${google.slice(0,3).map(escapeHtml).join(', ')}
+
+Long-tail queries: ${google.slice(3).map(escapeHtml).join(', ')}
+
+Questions people ask (PAA):
+${questions.map(escapeHtml).join('\n')}
+
+Key takeaways
+Angle "${escapeHtml(topic)}" is saturated in ${escapeHtml(niche)}.
+Small-channel breakout video shows an underserved hook opportunity.
+Top Google question ("${escapeHtml(questions[0])}") — strong title candidate.`;
+
       return { html: `
         <div class="out-block"><div class="out-label">YouTube — top performers</div>
         <table><thead><tr><th>#</th><th>Title</th><th>Channel</th><th>Views</th><th>Published</th><th>Link</th><th>Angle note</th></tr></thead><tbody>${rows}</tbody></table></div>
@@ -1171,7 +1201,7 @@
         <div class="out-block"><div class="out-label">Key takeaways</div><ul>
         <li>Angle "<strong>${escapeHtml(topic)}</strong>" is saturated in ${escapeHtml(niche)}.</li>
         <li>Small-channel breakout video shows an underserved hook opportunity.</li>
-        <li>Top Google question: "${escapeHtml(questions[0])}" — strong title candidate.</li></ul></div>` };
+        <li>Top Google question: "${escapeHtml(questions[0])}" — strong title candidate.</li></ul></div>`, text };
     }
 
     async function analystStage(niche) {
@@ -1180,6 +1210,41 @@
         const runtime = 15 + i * 12; const isLong = runtime >= 30;
         return `<tr><td>${i+1}</td><td style="color:var(--accent-purple); font-weight:600;">${escapeHtml(b)}</td><td>Video</td><td>${runtime} days</td><td>${escapeHtml(`${topicPlaceholder()} hook: stop ${niche} mistakes`)}</td><td>Learn more</td><td><a href="#" style="color:var(--accent); font-size:0.8rem;">library</a></td><td>${isLong ? '<span style="color:var(--accent-green); font-weight:700;">LONG-RUNNER</span>' : ''}</td></tr>`;
       }).join('');
+      const textRows = brands.map((b, i) => {
+        const runtime = 15 + i * 12; const isLong = runtime >= 30;
+        const type = 'Video';
+        const hook = `${topicPlaceholder()} hook: stop ${niche} mistakes`;
+        const cta = 'Learn more';
+        const status = isLong ? 'LONG-RUNNER' : '';
+        return `${i+1}\t${escapeHtml(b)}\t${type}\t${runtime} days\t"${escapeHtml(hook)}"\t${cta}\t${status}`;
+      }).join('\n');
+      const text = `Stage 2 — Competitor Analyst: Meta & Google Ads
+
+Competitors analyzed
+${brands.map(escapeHtml).join('\n')}
+
+Meta Ad Library — active ads
+#\tBrand\tType\tRuntime\tHook / copy\tCTA\tStatus
+${textRows}
+
+Google Ads Transparency — findings
+#\tBrand\tFormat\tFirst seen\tCopy summary\tLanding page
+1\tRamsey Solutions\tText\t52 days\t"Break the paycheck-to-paycheck cycle"\tramseysolutions.com
+2\tYNAB\tVideo\t41 days\t"Stop wondering where your money went"\tyouneedabudget.com
+
+Video ad breakdown (long-runner: Ramsey Solutions)
+Hook (0-3s): "You get paid and suddenly you feel rich. Three days later you're wondering where it went."
+Message (3-10s): Payday isn't about how much you make — it's about having a plan before the money hits.
+Proof (10-20s): Before/after budget screen + customer testimonial.
+CTA (20-25s): "Get your free budget template — link in bio."
+Tone: Direct, slightly confrontational, authority-driven.
+Length: ~25 seconds.
+
+Cross-competitor patterns
+Common hook: "stop making mistakes" / contrarian framing.
+Common offer: Free budget template / free trial.
+Gap: Nobody is teaching the psychology of why payday feels rich — they all jump to budgeting tools. That's your opening.`;
+
       return { html: `
         <div class="out-block"><div class="out-label">Competitors analyzed</div><ul>${brands.map(b => `<li>${escapeHtml(b)}</li>`).join('')}</ul></div>
         <div class="out-block"><div class="out-label">Meta Ad Library — active ads</div>
@@ -1192,7 +1257,7 @@
         <div class="out-block"><div class="out-label">Cross-competitor patterns</div><ul>
         <li>Common hook: "stop making mistakes" / contrarian framing.</li>
         <li>Common offer: free trial / link in bio.</li>
-        <li>Gap: nobody is teaching ${escapeHtml(topicPlaceholder())} step-by-step.</li></ul></div>` };
+        <li>Gap: nobody is teaching ${escapeHtml(topicPlaceholder())} step-by-step.</li></ul></div>`, text };
     }
 
     async function writerStage(research, analyst, topic) {
@@ -1212,6 +1277,36 @@
         { time: '45-50s', text: 'Follow for more ' + escapeHtml(niche) + ' tips.', note: 'Close' }
       ];
       const caption = `${escapeHtml(topic)} is dead — do this instead.\n\nMost ${escapeHtml(niche)} creators waste hours on it with zero results. The fix takes 2 minutes.\n\nComment WORKFLOW for the template.\n\n#${escapeHtml(niche.replace(/\s+/g,''))} #${escapeHtml(topic.replace(/\s+/g,''))} #SocialMediaTips #ContentStrategy`;
+      const hooksText = hooks.map((h, i) => {
+        const star = i === 0 ? '★ ' : '';
+        const recommended = i === 0 ? ' ★ RECOMMENDED' : '';
+        return `${star}${i+1}. ${escapeHtml(h)}${recommended}`;
+      }).join('\n');
+      const scriptText = script.map(b => `${b.time}\t${escapeHtml(b.text)}\t${b.note}`).join('\n');
+      const text = `Stage 3 — Content Writer: Hooks + Script + Caption
+
+Voice: Bold & provocative | Length: 30s | Platform: TikTok / Reels / Shorts
+
+5 hooks
+${hooksText}
+
+Timed script (30s)
+Beat\tTime\tScript\tOn-screen text
+HOOK\t0-3s\t${escapeHtml(script[0].text)}\tYOUR PAYCHECK ≠ RICH
+SETUP\t3-10s\t${escapeHtml(script[1].text)}\tPAYDAY DOPAMINE
+VALUE\t10-25s\t${escapeHtml(script[2].text)}\tPLAN BEFORE PAYDAY
+PROOF\t25-35s\t${escapeHtml(script[3].text)}\t50/30/20 RULE
+CTA\t45-50s\t${escapeHtml(script[4].text)}\tCOMMENT PAYDAY
+
+Caption
+
+${caption}
+
+Production notes
+B-roll: Screen recording of a budgeting app, cash being allocated into envelopes, bank balance dipping.
+Music: High energy, fast beat, builds on the hook.
+Text overlay: Big, bold captions synced to voiceover; key numbers pop on screen.`;
+
       return { html: `
         <div class="out-block"><div class="out-label">5 hooks</div>
         ${hooks.map((h, i) => `<div class="hook ${i===0?'star':''}">${i+1}. ${h} ${i===0?'★ RECOMMENDED':''}</div>`).join('')}
@@ -1221,7 +1316,7 @@
         </div>
         <div class="out-block"><div class="out-label">Caption</div><pre>${caption}</pre></div>
         <div class="out-block"><div class="out-label">Production notes</div><ul>
-        <li>B-roll: screen recording of the 2-minute workflow change.</li><li>Music: high energy, fast beat.</li><li>Text overlay: big, bold captions synced to voiceover.</li></ul></div>`, hooks, script, caption };
+        <li>B-roll: screen recording of the 2-minute workflow change.</li><li>Music: high energy, fast beat.</li><li>Text overlay: big, bold captions synced to voiceover.</li></ul></div>`, hooks, script, caption, text };
     }
 
     async function editorStage(writer) {
@@ -1237,13 +1332,49 @@
       ];
       const rows = platforms.map(p => `<tr><td>${escapeHtml(p.name)}</td><td style="font-size:0.8rem;">${escapeHtml(p.body.slice(0,40))}...</td><td>${p.tags}</td><td>${p.len}</td><td>${p.aspect}</td></tr>`).join('');
       const cards = platforms.map(p => `<div class="platform"><h4>${escapeHtml(p.name)}</h4><div style="font-size:0.85rem; margin-bottom:0.3rem;"><strong>Hook:</strong> ${escapeHtml(p.hook)}</div><div style="font-size:0.85rem; margin-bottom:0.3rem;"><strong>Caption:</strong> ${escapeHtml(p.body)}</div><div style="font-size:0.8rem; color:var(--text-muted);"><strong>Hashtags:</strong> ${p.tags} &nbsp;|&nbsp; <strong>Length:</strong> ${p.len} &nbsp;|&nbsp; <strong>Aspect:</strong> ${p.aspect}</div></div>`).join('');
+      const tableText = platforms.map((p, i) => `${i+1}\t${escapeHtml(p.name)}\t${escapeHtml(p.body.slice(0,40))}...\t${p.tags}\t${p.len}\t${p.aspect}`).join('\n');
+      const packagesText = platforms.map(p => {
+        return `${escapeHtml(p.name)}\nHook: ${escapeHtml(p.hook)}\nCaption: ${escapeHtml(p.body)}\nHashtags: ${p.tags}\tFormat: ${p.aspect}, ${p.len}\n`;
+      }).join('\n');
+      const text = `Stage 4 — Editor: Multi-Platform Packages
+
+Summary table
+Channel\tCaption (preview)\tHashtags\tLength\tAspect
+${tableText}
+
+Per-channel packages
+
+${packagesText}`;
+
       return { html: `
         <div class="out-block"><div class="out-label">Summary table</div>
         <table><thead><tr><th>Channel</th><th>Caption (preview)</th><th>Hashtags</th><th>Length</th><th>Aspect</th></tr></thead><tbody>${rows}</tbody></table></div>
-        <div class="out-block"><div class="out-label">Per-channel packages</div>${cards}</div>`, platforms };
+        <div class="out-block"><div class="out-label">Per-channel packages</div>${cards}</div>`, platforms, text };
     }
 
     async function approverStage(editor) {
+      const text = `Stage 5 — Approver: Review Results
+
+Review results
+✅ TikTok — Pass. Hook strong, within limits.
+✅ Instagram Reels — Pass. Hashtag count OK.
+⚠️ YouTube Shorts — Caption under 100 char title recommended. Title is 49 chars — OK.
+✅ X (Twitter) — Pass. 280 chars OK.
+✅ LinkedIn — Pass. Professional tone preserved.
+✅ Facebook — Pass.
+✅ Threads — Pass.
+✅ Pinterest — Pass.
+
+Issues found
+
+🟡 Warnings (recommended but not blocking):
+
+[YouTube Shorts] Consider front-loading the keyword "payday" in the title for SEO.
+
+Overall status
+
+⚠️ NEEDS YOUR APPROVAL — nothing ships until you say yes`;
+
       return { html: `
         <div class="out-block"><div class="out-label">Review results</div>
         <div class="issue ok"><strong>✅ TikTok</strong> — Pass. Hook strong, within limits.</div>
@@ -1260,15 +1391,23 @@
           <button class="primary" id="btnApprove">Approve &gt; Publisher</button>
           <button class="secondary" id="btnRevise">Request revision</button>
         </div>
-        <p style="margin-top:0.75rem; color:var(--text-muted); font-size:0.85rem;">Decision logged on approve.</p>` };
+        <p style="margin-top:0.75rem; color:var(--text-muted); font-size:0.85rem;">Decision logged on approve.</p>`, text };
     }
 
     async function publisherStage(editor) {
       const results = ['TikTok','Instagram Reels','YouTube Shorts','X (Twitter)','LinkedIn','Facebook','Threads','Pinterest'];
       const cards = results.map(ch => `<div class="result-card"><div class="val">✅ Posted</div><div class="lbl">${escapeHtml(ch)}</div><div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.4rem;">posted</div></div>`).join('');
+      const text = `Stage 6 — Publisher: Multi-Channel Execution
+
+Published to all 8 channels
+${results.map(ch => `✅ ${ch}`).join('\n')}
+
+Log entry
+[2026-11-26] ACTION: posted | Content: ${escapeHtml(topic)} | Channels: 8 | Result: all ✅`;
+
       return { html: `
         <div class="out-block"><div class="out-label">Published to all 8 channels</div><div class="results-grid">${cards}</div></div>
-        <div class="out-block"><div class="out-label">Log entry</div><pre>[2026-11-26] ACTION: posted | Content: ${escapeHtml(topic)} | Channels: 8 | Result: all ✅</pre></div>` };
+        <div class="out-block"><div class="out-label">Log entry</div><pre>[2026-11-26] ACTION: posted | Content: ${escapeHtml(topic)} | Channels: 8 | Result: all ✅</pre></div>`, text };
     }
 
     /* ============ WIRE UP ============ */
