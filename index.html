@@ -7,20 +7,20 @@
   <style>
     :root {
       --bg: #0d1117;
-      --card-bg: #161b22;
-      --card-border: #30363d;
-      --accent: #58a6ff;
-      --accent-purple: #bc8cff;
-      --accent-green: #3fb950;
-      --accent-orange: #d29922;
-      --accent-red: #f85149;
-      --accent-pink: #f778ba;
-      --text: #c9d1d9;
-      --text-muted: #8b949e;
-      --text-bright: #f0f6fc;
-      --success: #3fb950;
-      --warn: #d29922;
-      --block: #f85149;
+      --card-bg: #171c24;
+      --card-border: #484f58;
+      --accent: #64b5f6;
+      --accent-purple: #ba68c8;
+      --accent-green: #81c784;
+      --accent-orange: #ffb74d;
+      --accent-red: #ef5350;
+      --accent-pink: #e91e63;
+      --text: #e0e0e0;
+      --text-muted: #78909c;
+      --text-bright: #fff;
+      --success: #4caf50;
+      --warn: #fb8c00;
+      --block: #f44336;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -57,7 +57,8 @@
     .section-title {
       font-size: 1.1rem;
       color: var(--text-bright);
-      margin: 1.5rem 0 0.75rem 0;
+      max-width: 900px;
+      margin: 1.5rem auto 0.75rem auto;
       display: flex;
       align-items: center;
       gap: 0.5rem;
@@ -69,8 +70,12 @@
       gap: 1.5rem;
       width: 100%;
       max-width: 1100px;
-      margin-bottom: 2rem;
+      margin: 0 auto 2rem auto;
       perspective: 800px;
+    }
+
+    /* "The Team" heading lines up with the wider team grid */
+    .section-title.team-title { max-width: 1100px;
     }
 
     .agent-card {
@@ -301,6 +306,15 @@
       grid-template-columns: 1fr 1fr auto;
       gap: 1rem;
       align-items: end;
+    }
+
+    .field { display: flex; flex-direction: column; gap: 0.35rem; min-width: 0; }
+    .field label { font-size: 0.85rem; color: var(--text-muted); }
+
+    /* Narrow screens: stack Niche, Topic, then a full-width button */
+    @media (max-width: 640px) {
+      .input-row { grid-template-columns: 1fr; }
+      #btnStart { width: 100%; }
     }
 
     input {
@@ -613,6 +627,155 @@
 
     .hidden { display: none !important; }
 
+    /* ===== The Office ===== */
+    .office-section {
+      max-width: 1100px;
+      margin: 0 auto 2rem auto;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 300px;
+      gap: 1rem;
+      align-items: start;
+    }
+    @media (max-width: 900px) { .office-section { grid-template-columns: 1fr; } }
+    .office-floor, .panel-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 0.75rem;
+    }
+    #officeCanvas {
+      display: block;
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+      background: radial-gradient(ellipse at 50% 45%, #ffffff 0%, #eef2f6 70%, #e2e8f0 100%);
+    }
+    /* Pixel office: low-res art scaled with hard pixels + a crisp text layer on top */
+    .office-stage.pixel { background: #0b0a16; }
+    .office-stage canvas.px { display: block; width: 100%; height: auto; image-rendering: pixelated; image-rendering: crisp-edges; border-radius: 8px; }
+    .office-stage canvas.px-ui { position: absolute; left: 0; top: 0; width: 100%; height: 100%; }
+
+    /* 3D office: WebGL canvas + crisp HTML overlays */
+    .office-stage { position: relative; border-radius: 8px; overflow: hidden; }
+    .office-stage canvas.gl {
+      display: block; width: 100%; height: auto; aspect-ratio: 3 / 2; border-radius: 8px;
+      background: radial-gradient(ellipse at 50% 40%, #f8fafc 0%, #e8edf3 65%, #d7dee7 100%);
+      cursor: grab; touch-action: pan-y;
+    }
+    .office-stage canvas.gl:active { cursor: grabbing; }
+    .o3-layer { position: absolute; inset: 0; pointer-events: none; }
+    .o3-label {
+      position: absolute; left: 0; top: 0; display: flex; align-items: center; gap: 6px;
+      padding: 4px 10px 4px 6px; border-radius: 999px; white-space: nowrap;
+      background: rgba(255,255,255,0.92); color: #1e293b; font-size: 12px; font-weight: 600;
+      box-shadow: 0 4px 14px rgba(15,23,42,0.18), 0 0 0 1px rgba(15,23,42,0.06);
+      backdrop-filter: blur(6px); pointer-events: auto; cursor: pointer;
+      transition: box-shadow .2s ease;
+      will-change: transform;
+    }
+    .o3-label:hover { box-shadow: 0 6px 18px rgba(15,23,42,0.28), 0 0 0 2px rgba(96,165,250,0.6); }
+    .o3-label::after {
+      content: ""; position: absolute; left: 50%; bottom: -5px; width: 10px; height: 10px; margin-left: -5px;
+      background: inherit; transform: rotate(45deg); border-radius: 2px; z-index: -1;
+    }
+    .o3-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .o3-badge {
+      display: none; width: 20px; height: 20px; border-radius: 50%; color: #fff; font-size: 12px; font-weight: 800;
+      align-items: center; justify-content: center; box-shadow: 0 0 0 2px #fff;
+    }
+    .o3-label[data-s="working"] .o3-badge { display: flex; background: #f59e0b; animation: o3pulse 1.2s ease-in-out infinite; }
+    .o3-label[data-s="done"] .o3-badge { display: flex; background: #16a34a; }
+    .o3-label[data-s="waiting"] .o3-badge { display: flex; background: #eab308; animation: o3pulse .8s ease-in-out infinite; }
+    .o3-label[data-s="failed"] .o3-badge, .o3-label[data-s="blocked"] .o3-badge { display: flex; background: #dc2626; }
+    .o3-mail { display: none; background: #1e293b; color: #fff; border-radius: 999px; font-size: 10px; font-weight: 800; padding: 1px 6px; }
+    @keyframes o3pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); } }
+    .o3-card {
+      position: absolute; left: 14px; top: 14px; min-width: 220px; padding: 10px 14px 11px 16px;
+      background: rgba(15,23,42,0.86); backdrop-filter: blur(8px); border-radius: 12px; color: #f8fafc;
+      box-shadow: 0 10px 30px rgba(15,23,42,0.3); border-left: 4px solid var(--o3-accent, #94a3b8);
+    }
+    .o3-card small { display: block; font-size: 10px; font-weight: 800; letter-spacing: .6px; color: var(--o3-accent, #94a3b8); }
+    .o3-card strong { display: block; font-size: 16px; margin-top: 2px; }
+    .o3-hint {
+      position: absolute; right: 12px; bottom: 10px; font-size: 11px; color: #475569;
+      background: rgba(255,255,255,0.75); padding: 3px 9px; border-radius: 999px;
+    }
+    @media (max-width: 640px) { .o3-label { font-size: 10px; padding: 3px 7px 3px 4px; } .o3-card { transform: scale(.85); transform-origin: top left; } }
+
+    .office-legend {
+      display: flex; flex-wrap: wrap; gap: 0.4rem 1rem;
+      margin-top: 0.6rem; font-size: 0.8rem; color: var(--text-muted);
+    }
+    .office-legend i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 0.35rem; }
+    .office-legend .office-hint { margin-left: auto; font-style: italic; }
+    .office-panel { display: flex; flex-direction: column; gap: 1rem; min-width: 0; }
+    .panel-card h3 {
+      font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px;
+      color: var(--accent); margin-bottom: 0.6rem;
+    }
+    .office-run { font-size: 0.85rem; color: var(--text-bright); margin-bottom: 0.6rem; overflow-wrap: anywhere; }
+    .task-row {
+      display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;
+      padding: 0.35rem 0; border-bottom: 1px solid #21262d; font-size: 0.85rem;
+    }
+    .task-row:last-child { border-bottom: none; }
+    .task-row .who { display: flex; align-items: center; gap: 0.45rem; min-width: 0; }
+    .task-row .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .chip {
+      font-size: 0.72rem; padding: 0.1rem 0.45rem; border-radius: 999px; white-space: nowrap;
+      border: 1px solid var(--card-border); color: var(--text-muted); background: #0d1117;
+    }
+    .chip.working { color: #ffb74d; border-color: #ffb74d; }
+    .chip.done { color: #81c784; border-color: #81c784; }
+    .chip.waiting { color: #ffd54f; border-color: #ffd54f; }
+    .chip.failed, .chip.blocked { color: #ef5350; border-color: #ef5350; }
+    .office-feed { list-style: none; font-size: 0.8rem; max-height: 220px; overflow-y: auto; }
+    .office-feed li { padding: 0.3rem 0; border-bottom: 1px solid #21262d; color: var(--text); overflow-wrap: anywhere; }
+    .office-feed li:last-child { border-bottom: none; }
+    .office-feed time { color: var(--text-muted); margin-right: 0.4rem; font-variant-numeric: tabular-nums; }
+    .office-feed .muted { color: var(--text-muted); font-style: italic; }
+    .hive-note { margin-top: 0.6rem; font-size: 0.75rem; color: var(--text-muted); overflow-wrap: anywhere; }
+    .hive-note code { padding: 0.05rem 0.3rem; font-size: 0.72rem; }
+
+    /* Finished/failed stages stay listed (click the header to expand) */
+    .stage.status-done, .stage.status-failed { display: block; }
+    .stage.status-failed .stage-title { color: var(--accent-red); }
+    .stage.status-failed .stage-body { display: block; }
+
+    .mode-banner {
+      margin-top: 0.75rem;
+      padding: 0.5rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      border-left: 3px solid var(--card-border);
+      color: var(--text-muted);
+      background: #090d11;
+    }
+    .mode-banner.live { border-left-color: var(--success); color: var(--accent-green); }
+
+    .resume-banner {
+      margin-top: 0.75rem; padding: 0.75rem 0.9rem; border-radius: 8px;
+      display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap;
+      background: rgba(251, 191, 36, 0.08); border: 1px solid rgba(251, 191, 36, 0.45); color: var(--text-bright);
+      font-size: 0.9rem;
+    }
+    .resume-banner[hidden] { display: none; }
+    .resume-banner .resume-text { min-width: 0; overflow-wrap: anywhere; }
+    .resume-banner .resume-text span { color: var(--text-muted); }
+    .resume-banner .resume-actions { display: flex; gap: 0.5rem; }
+    .resume-banner button.secondary { margin-top: 0; }
+    .mode-banner.demo { border-left-color: var(--warn); color: var(--accent-orange); }
+
+    /* Rendered agent markdown */
+    .md { font-size: 0.9rem; line-height: 1.55; overflow-x: auto; }
+    .md h1, .md h2, .md h3, .md h4 { color: var(--text-bright); margin: 1rem 0 0.5rem; }
+    .md h1 { font-size: 1.2rem; } .md h2 { font-size: 1.05rem; } .md h3, .md h4 { font-size: 0.95rem; }
+    .md p, .md ul, .md ol { margin-bottom: 0.6rem; }
+    .md ul, .md ol { padding-left: 1.3rem; }
+    .md a { color: var(--accent); }
+    .md code { padding: 0.1rem 0.3rem; }
+    .md pre code { padding: 0; border: none; }
+
     .finish-wrap {
       text-align: center;
       margin-top: 2rem;
@@ -645,14 +808,28 @@
     <div class="input-card">
       <h2>Team Input</h2>
       <div class="input-row">
-        <input type="text" id="inputNiche" placeholder="e.g. Money Mindset" />
-        <input type="text" id="inputTopic" placeholder="e.g. Why You Feel Rich on Payday" />
+        <div class="field">
+          <label for="inputNiche">Niche</label>
+          <input type="text" id="inputNiche" placeholder="e.g. Money Mindset" />
+        </div>
+        <div class="field">
+          <label for="inputTopic">Topic</label>
+          <input type="text" id="inputTopic" placeholder="e.g. Why You Feel Rich on Payday" />
+        </div>
         <button class="primary" id="btnStart">Run Team</button>
       </div>
       <p style="margin-top:0.75rem; color:var(--text-muted); font-size:0.85rem;">
         The pipeline runs: Researcher → Competitor Analyst → Content Writer → Editor → Approver → Publisher.
         Nothing publishes until you click Approve.
       </p>
+      <div class="mode-banner" id="modeBanner">Checking for the local team server…</div>
+      <div class="resume-banner" id="resumeBanner" hidden>
+        <div class="resume-text"></div>
+        <div class="resume-actions">
+          <button class="primary" id="btnResume">Resume run</button>
+          <button class="secondary" id="btnDismiss">Dismiss</button>
+        </div>
+      </div>
     </div>
 
     <div class="progress-wrap" id="progressWrap">
@@ -678,8 +855,37 @@
     </div>
   </div>
 
+  <!-- ===== The Office ===== -->
+  <div class="section-title team-title">🏢 The Office</div>
+  <div class="office-section">
+    <div class="office-floor">
+      <div class="office-stage" id="officeStage">
+        <canvas id="officeCanvas" aria-label="Office floor: each teammate at their desk, showing who is working"></canvas>
+      </div>
+      <div class="office-legend">
+        <span><i style="background:#ffb74d"></i>Working</span>
+        <span><i style="background:#81c784"></i>Done</span>
+        <span><i style="background:#ffd54f"></i>Waiting on you</span>
+        <span><i style="background:#ef5350"></i>Failed / blocked</span>
+        <span class="office-hint">Click a desk to meet that teammate.</span>
+      </div>
+    </div>
+    <div class="office-panel">
+      <div class="panel-card">
+        <h3>Task board</h3>
+        <div class="office-run" id="officeRun">No run yet. Enter a niche and topic above.</div>
+        <div id="officeTasks"></div>
+      </div>
+      <div class="panel-card">
+        <h3>Activity</h3>
+        <ul class="office-feed" id="officeFeed"><li class="muted">Quiet office. Nothing has happened yet.</li></ul>
+        <p class="hive-note" id="officeHiveNote"></p>
+      </div>
+    </div>
+  </div>
+
   <!-- ===== Team Dashboard ===== -->
-  <div class="section-title">👥 The Team</div>
+  <div class="section-title team-title">👥 The Team</div>
   <div class="team-grid" id="teamGrid"></div>
 
   <!-- Modal (team dashboard) -->
@@ -720,7 +926,7 @@
         name: "Researcher",
         role: "Content Discovery & Trends",
         desc: "Finds top-performing YouTube videos and Google search demand for any topic.",
-        file: "agents/social-media-researcher.md",
+        file: ".claude/agents/social-media-researcher.md",
         color: "#58a6ff",
         tags: ["YouTube", "Google Trends", "View Analysis", "Hooks"],
         inputs: ["topic (required)", "niche (optional)", "max_results"],
@@ -737,7 +943,7 @@
         name: "Competitor Analyst",
         role: "Paid Ad Intelligence",
         desc: "Pulls competitors' active Meta & Google ads, isolates long-runners (30+ days), and breaks down video ad scripts.",
-        file: "agents/social-media-competitor-analyst.md",
+        file: ".claude/agents/social-media-competitor-analyst.md",
         color: "#bc8cff",
         tags: ["Meta Ad Library", "Google Ads", "Long-Runners", "Ad Hooks"],
         inputs: ["competitors (optional)", "niche (required if no brands)", "country"],
@@ -754,7 +960,7 @@
         name: "Content Writer",
         role: "Short-Form Script & Hooks",
         desc: "Turns research and ad data into 5 hook options, a timed short-form script (15-60s), captions, and b-roll notes.",
-        file: "agents/social-media-content-writer.md",
+        file: ".claude/agents/social-media-content-writer.md",
         color: "#f778ba",
         tags: ["Bold Voice", "TikTok/Reels/Shorts", "5 Hooks", "Beat Script"],
         inputs: ["topic", "research (optional)", "competitor_analysis (optional)", "length"],
@@ -771,7 +977,7 @@
         name: "Editor",
         role: "Multi-Platform Adapter",
         desc: "Rewrites one finished piece across 9 social channels respecting character limits, hashtag norms, and aspect ratios.",
-        file: "agents/social-media-editor.md",
+        file: ".claude/agents/social-media-editor.md",
         color: "#d29922",
         tags: ["9 Channels", "Char Limits", "Aspect Ratios", "Hashtag Rules"],
         inputs: ["content (required)", "channels (default: 9 platforms)", "voice_override"],
@@ -788,7 +994,7 @@
         name: "Approver",
         role: "Quality & Safety Gatekeeper",
         desc: "Final gate before publishing. Checks facts, brand safety, platform policy, and quality. Nothing ships without your 'yes'.",
-        file: "agents/social-media-approver.md",
+        file: ".claude/agents/social-media-approver.md",
         color: "#f85149",
         tags: ["Gatekeeper", "Brand Safety", "Fact Check", "Approvals Log"],
         inputs: ["content (required)", "brand_guidelines (optional)", "risk_tolerance"],
@@ -805,7 +1011,7 @@
         name: "Publisher",
         role: "Multi-Channel Execution",
         desc: "Publishes or schedules approved content across channels. Verifies approval log before firing. Logs every action.",
-        file: "agents/social-media-publisher.md",
+        file: ".claude/agents/social-media-publisher.md",
         color: "#3fb950",
         tags: ["Post Now", "Schedule", "Approval Gate", "Publish Log"],
         inputs: ["content", "approval (required)", "action (post_now|schedule)", "schedule_time"],
@@ -1034,7 +1240,9 @@
 
     function setStageStatus(id, status) {
       const el = document.getElementById('stage-' + id);
-      el.className = `stage status-${status}`;
+      const wasActive = el.classList.contains('active');
+      el.className = `stage status-${status}` + (wasActive ? ' active' : '');
+      if (typeof Office !== 'undefined') Office.stage(id, status);
     }
 
     function toggleStage(id) {
@@ -1053,10 +1261,18 @@
       }
     }
 
-    async function runPipeline() {
-      niche = inputNiche.value.trim();
-      topic = inputTopic.value.trim();
-      if (!niche || !topic) { alert('Please enter both niche and topic.'); return; }
+    async function runPipeline(resume) {
+      resume = resume && resume.run_id ? resume : null; // a click passes an Event, not a run
+      if (resume) {
+        niche = resume.niche; topic = resume.topic;
+        inputNiche.value = niche; inputTopic.value = topic;
+      } else {
+        niche = inputNiche.value.trim();
+        topic = inputTopic.value.trim();
+        if (!niche || !topic) { alert('Please enter both niche and topic.'); return; }
+      }
+      hideResumeBanner();
+      runInProgress = true;
 
       btnStart.disabled = true;
       initPipeline();
@@ -1068,32 +1284,60 @@
       function setProgress(label, pct) {
         progressWrap.classList.add('active');
         progressLabel.innerText = label;
+        if (pct == null) return; // keep previous percentage
         progressPct.innerText = pct + '%';
         progressFill.style.width = pct + '%';
       }
 
-      setProgress('Starting pipeline...', 0);
+      setProgress(resume ? 'Resuming run…' : 'Starting pipeline...', 0);
+      pipelineData = {};
+      runId = resume ? resume.run_id : null;
+      resumeState = resume;
 
-      stageIndex++; setProgress('Researcher — YouTube + Google demand', Math.round((stageIndex - 1) / totalStages * 100));
-      await runStage('researcher', () => researcherStage(niche, topic), setProgress);
+      // Live mode runs the real agent through server.py; demo mode uses the simulated generators.
+      const pick = (id, demoFn) => liveMode ? () => liveStage(id) : demoFn;
+      const stop = (label) => { setProgress(label, null); btnStart.disabled = false; Office.endRun(false); runInProgress = false; resumeState = null; };
+      Office.startRun(topic);
+      const pct = () => Math.round((stageIndex - 1) / totalStages * 100);
 
-      stageIndex++; setProgress('Competitor Analyst — Meta & Google ads', Math.round((stageIndex - 1) / totalStages * 100));
-      await runStage('analyst', () => analystStage(niche), setProgress);
+      stageIndex++; setProgress('Researcher — YouTube + Google demand', pct());
+      if (!await runStage('researcher', pick('researcher', () => researcherStage(niche, topic)), setProgress)) return stop('Stopped — Researcher failed.');
 
-      stageIndex++; setProgress('Content Writer — hooks & script', Math.round((stageIndex - 1) / totalStages * 100));
-      await runStage('writer', () => writerStage(pipelineData.researcher, pipelineData.analyst, topic), setProgress);
+      stageIndex++; setProgress('Competitor Analyst — Meta & Google ads', pct());
+      if (!await runStage('analyst', pick('analyst', () => analystStage(niche)), setProgress)) return stop('Stopped — Competitor Analyst failed.');
 
-      stageIndex++; setProgress('Editor — 9 platform packages', Math.round((stageIndex - 1) / totalStages * 100));
-      await runStage('editor', () => editorStage(pipelineData.writer), setProgress);
+      stageIndex++; setProgress('Content Writer — hooks & script', pct());
+      if (!await runStage('writer', pick('writer', () => writerStage(pipelineData.researcher, pipelineData.analyst, topic)), setProgress)) return stop('Stopped — Content Writer failed.');
 
-      setProgress('Approver — waiting for your decision', Math.round(stageIndex / totalStages * 100));
-      await runStage('approver', () => approverStage(pipelineData.editor), null, true);
+      stageIndex++; setProgress('Editor — 9 platform packages', pct());
+      if (!await runStage('editor', pick('editor', () => editorStage(pipelineData.writer)), setProgress)) return stop('Stopped — Editor failed.');
 
-      stageIndex++; setProgress('Publisher — posting to all channels', Math.round(stageIndex / totalStages * 100));
-      await runStage('publisher', () => publisherStage(pipelineData.editor), setProgress);
+      stageIndex++; setProgress('Approver — reviewing the package', pct());
+      if (!await runStage('approver', pick('approver', () => approverStage(pipelineData.editor)), null, true)) return stop('Stopped — Approver failed. Nothing was published.');
+      setProgress('Approver — waiting for your decision', null);
+
+      // HARD GATE: nothing below runs until the user explicitly clicks Approve.
+      // (In live mode server.py enforces this again against approvals.log.)
+      setStageStatus('approver', 'running'); // stays highlighted while waiting on the user
+      Office.waiting();
+      // resuming a run you already approved (logged in approvals.log for this exact package): don't ask twice
+      const alreadyApproved = resumeState && resumeState.decision === 'approved';
+      const decision = alreadyApproved ? markAlreadyApproved() : await waitForApproval();
+      if (decision !== 'approved') {
+        setStageStatus('approver', 'done');
+        Office.decided(decision);
+        return stop('Stopped — revision requested. Nothing was published.');
+      }
+      setStageStatus('approver', 'done');
+      Office.decided('approved');
+
+      stageIndex++; setProgress(liveMode ? 'Publisher — pre-flight & publishing report' : 'Publisher — posting to all channels', pct());
+      if (!await runStage('publisher', pick('publisher', () => publisherStage(pipelineData.editor)), setProgress)) return stop('Stopped — Publisher did not run.');
 
       setProgress('Pipeline complete ✅', 100);
       btnStart.disabled = false;
+      Office.endRun(true);
+      runInProgress = false; resumeState = null;
       document.getElementById('downloadBtn').classList.remove('hidden');
 
       // Populate full output for copy-paste
@@ -1136,8 +1380,13 @@
       const body = document.getElementById('body-' + id);
       body.innerHTML = `
         <div style="display:flex; align-items:center; gap:0.75rem; padding:1.25rem 0; color:var(--text-muted); font-style:italic;">
-          <div class="loader"></div><span>Running ${id}…</span>
+          <div class="loader"></div><span>Running ${id}… <span id="elapsed-${id}"></span></span>
         </div>`;
+      const started = Date.now();
+      const timer = setInterval(() => {
+        const el = document.getElementById('elapsed-' + id);
+        if (el) el.innerText = Math.round((Date.now() - started) / 1000) + 's' + (liveMode ? ' — real agents take a few minutes' : '');
+      }, 1000);
       await new Promise(r => setTimeout(r, 600));
       try {
         const result = await fn();
@@ -1150,9 +1399,120 @@
           const next = STAGE_NAMES.findIndex(s => s.id === id) + 1;
           showStage(next);
         }
+        return true;
       } catch (e) {
-        setStageStatus(id, 'pending');
-        body.innerHTML = '<div style="color:var(--accent-red);">Error: ' + e.message + '</div>';
+        setStageStatus(id, 'failed');
+        body.innerHTML = '<div style="color:var(--accent-red); white-space:pre-wrap;">Error: ' + escapeHtml(e.message) + '</div>';
+        return false;
+      } finally {
+        clearInterval(timer);
+      }
+    }
+
+    /* ============ LIVE MODE (server.py → claude -p --agent ...) ============ */
+    let liveMode = false;
+    let runId = null;
+
+    function renderMarkdown(md) {
+      // Agent output contains text pulled from the web, so always sanitize before inserting.
+      if (window.marked && window.DOMPurify) return DOMPurify.sanitize(marked.parse(md));
+      return '<pre>' + escapeHtml(md) + '</pre>';
+    }
+
+    async function postJSON(url, payload) {
+      const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      let data = {};
+      try { data = await res.json(); } catch (_) {}
+      if (!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
+      return data;
+    }
+
+    let resumeState = null;     // server's view of a run being resumed: which stages are saved / running
+    let runInProgress = false;  // drives the "leave page?" warning
+    const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+    async function getRun(id) {
+      const res = await fetch('/api/run?id=' + encodeURIComponent(id));
+      if (!res.ok) throw new Error('Could not load run ' + id);
+      return res.json();
+    }
+
+    async function liveStage(id) {
+      let data, restored = false;
+      if (resumeState) {
+        // a stage still running on the server (e.g. the page was reloaded mid-stage): wait for it, don't start a copy
+        while (resumeState.running === id && !(id in resumeState.outputs)) {
+          const el = document.getElementById('elapsed-' + id); if (el) el.innerText = '(still running on the server; waiting for it)';
+          await sleep(4000); resumeState = await getRun(runId);
+        }
+        if (id in resumeState.outputs) { data = { markdown: resumeState.outputs[id] }; restored = true; }
+      }
+      if (!data) {
+        data = await postJSON('/api/stage', { stage: id, run_id: runId, niche, topic });
+        runId = data.run_id;
+      }
+      const secs = data.duration_ms ? Math.round(data.duration_ms / 1000) + 's' : '';
+      const cost = data.cost_usd != null ? '$' + Number(data.cost_usd).toFixed(3) : '';
+      let html = `<div class="out-block" style="font-size:0.8rem; color:var(--text-muted);">${restored ? 'Restored from the saved run (not re-run)' : 'Real agent output'} · run <code>${escapeHtml(runId)}</code> ${secs ? '· ' + secs : ''} ${cost ? '· ' + cost : ''}</div>
+        <div class="md">${renderMarkdown(data.markdown)}</div>`;
+      if (id === 'approver') {
+        html += `<div class="cta-group">
+          <button class="primary" id="btnApprove">Approve &gt; Publisher</button>
+          <button class="secondary" id="btnRevise">Request revision</button>
+        </div>
+        <p style="margin-top:0.75rem; color:var(--text-muted); font-size:0.85rem;">Your decision is written to approvals.log.</p>`;
+      }
+      return { html, text: data.markdown };
+    }
+
+    // ---- resume an unfinished run (e.g. after a reload) ----
+    function hideResumeBanner() { const b = document.getElementById('resumeBanner'); if (b) b.hidden = true; }
+    async function checkResume() {
+      if (!liveMode) return;
+      let run;
+      try { run = (await (await fetch('/api/runs/unfinished')).json()).run; } catch (_) { return; }
+      if (!run || runInProgress) return;
+      const NAMES = { researcher: 'Researcher', analyst: 'Competitor Analyst', writer: 'Content Writer', editor: 'Editor', approver: 'Approver', publisher: 'Publisher' };
+      const last = run.done.length ? NAMES[run.done[run.done.length - 1]] : null;
+      const where = run.running ? `${NAMES[run.running]} is still working on it`
+        : run.decision === 'approved' ? 'approved and ready for the Publisher'
+        : last ? `stopped after the ${last}` : 'stopped before any stage finished';
+      const b = document.getElementById('resumeBanner');
+      b.querySelector('.resume-text').innerHTML = `<strong>Unfinished run:</strong> ${escapeHtml(run.topic)} <span>(${escapeHtml(run.niche)} · ${where} · ${run.done.length}/6 saved)</span>`;
+      b.hidden = false;
+      b.querySelector('#btnResume').onclick = async () => { b.hidden = true; runPipeline(await getRun(run.run_id)); };
+      b.querySelector('#btnDismiss').onclick = async () => {
+        b.hidden = true;
+        try { await postJSON('/api/run/dismiss', { run_id: run.run_id }); } catch (_) {}
+        checkResume(); // offer the next one, if any
+      };
+    }
+    function markAlreadyApproved() {
+      const approve = document.getElementById('btnApprove'), revise = document.getElementById('btnRevise');
+      if (approve) { approve.disabled = true; revise.disabled = true;
+        const note = document.createElement('p');
+        note.style.cssText = 'margin-top:0.5rem; font-size:0.85rem; color:var(--accent-green);';
+        note.innerText = 'Already approved earlier: approvals.log has an approval for this exact package.';
+        approve.parentElement.after(note); }
+      pipelineData.approval = { decision: 'approved', at: 'earlier (approvals.log)', topic };
+      return 'approved';
+    }
+    // warn before closing or reloading the page mid-run (the server keeps going, but this page would lose track)
+    window.addEventListener('beforeunload', (e) => { if (runInProgress && liveMode) { e.preventDefault(); e.returnValue = ''; } });
+
+    async function detectMode() {
+      const banner = document.getElementById('modeBanner');
+      try {
+        const res = await fetch('/api/health');
+        const h = await res.json();
+        liveMode = !!h.claude;
+        banner.className = 'mode-banner ' + (liveMode ? 'live' : 'demo');
+        banner.innerText = liveMode
+          ? 'LIVE — each stage runs the real agent from .claude/agents/ (uses your Claude plan; a full run takes several minutes).'
+          : 'DEMO — server is running but the Claude CLI was not found, so results are simulated.';
+      } catch (_) {
+        liveMode = false;
+        banner.className = 'mode-banner demo';
+        banner.innerText = 'DEMO — results below are simulated. Start the real team with:  py server.py';
       }
     }
 
@@ -1418,17 +1778,431 @@ Log entry
         <div class="out-block"><div class="out-label">Log entry</div><pre>[2026-11-26] ACTION: posted | Content: ${escapeHtml(topic)} | Channels: 8 | Result: all ✅</pre></div>`, text };
     }
 
+    /* ============ THE OFFICE ============
+       An isometric cut-away office. Every teammate has a desk; work moves between them as a folder.
+       All art is drawn here in code (original shapes, no third-party assets). */
+    const Office = (() => {
+      const W = 960, H = 640;
+      const cv = document.getElementById('officeCanvas');
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      cv.width = W * dpr; cv.height = H * dpr;
+      const g = cv.getContext('2d');
+      g.scale(dpr, dpr);
+
+      // ---- isometric projection: floor is 12 x 10 units, walls 3.1 units high ----
+      const S = 40, C = 0.866, OX = 452, OY = 150, RX = 12, RY = 10, WALL = 3.1;
+      const iso = (x, y, z = 0) => [OX + (x - y) * C * S, OY + (x + y) * 0.5 * S - z * S];
+
+      const ORDER = ['researcher', 'analyst', 'writer', 'editor', 'approver', 'publisher'];
+      const TEAM_ID = { researcher: 'researcher', analyst: 'competitor-analyst', writer: 'content-writer', editor: 'editor', approver: 'approver', publisher: 'publisher' };
+      // px/py = where the person sits; desk = [x, y, w, d]; spot = floor point in front, used for hand-offs
+      const P = {
+        lead:       { name: 'Team Lead',          color: '#64748b', px: 2.0,  py: 1.15, desk: [1.0, 1.55, 2.0, 0.9], spot: [2.0, 3.2],  skin: '#f1c27d', hair: '#3b2a1e', long: false, wood: '#8a5a33' },
+        researcher: { name: 'Researcher',         color: '#3b82f6', px: 5.1,  py: 1.15, desk: [4.2, 1.55, 1.9, 0.9], spot: [5.1, 3.2],  skin: '#e0ac69', hair: '#1f1f1f', long: true },
+        analyst:    { name: 'Competitor Analyst', color: '#8b5cf6', px: 8.1,  py: 1.15, desk: [7.2, 1.55, 1.9, 0.9], spot: [8.1, 3.2],  skin: '#8d5524', hair: '#111111', long: false },
+        writer:     { name: 'Content Writer',     color: '#ec4899', px: 10.6, py: 3.75, desk: [9.7, 4.15, 1.9, 0.9], spot: [9.4, 5.9],  skin: '#ffdbac', hair: '#a0522d', long: true },
+        editor:     { name: 'Editor',             color: '#d97706', px: 10.6, py: 6.95, desk: [9.7, 7.35, 1.9, 0.9], spot: [9.0, 8.9],  skin: '#c68642', hair: '#2a1a0f', long: false },
+        approver:   { name: 'Approver',           color: '#ef4444', px: 6.7,  py: 7.15, desk: [5.7, 7.55, 2.0, 0.9], spot: [6.7, 5.45], skin: '#f1c27d', hair: '#6b7280', long: true },
+        publisher:  { name: 'Publisher',          color: '#22c55e', px: 2.1,  py: 7.15, desk: [1.1, 7.55, 2.0, 0.9], spot: [2.1, 5.6],  skin: '#a0522d', hair: '#141414', long: false },
+      };
+
+      // ---- state ----
+      const state = {}; Object.keys(P).forEach(k => state[k] = 'idle');
+      let gateOpen = false, folders = [], feed = [], inbox = {}, serverRun = null, localRun = null, active = false, runStatus = 'none';
+      let t = 0;
+
+      // ---- colour + drawing kit ----
+      const shade = (hex, f) => {
+        const n = parseInt(hex.slice(1), 16), r = (n >> 16) & 255, gg = (n >> 8) & 255, b = n & 255;
+        const m = (v) => Math.max(0, Math.min(255, Math.round(f < 1 ? v * f : v + (255 - v) * (f - 1))));
+        return '#' + [m(r), m(gg), m(b)].map(v => v.toString(16).padStart(2, '0')).join(''); // stays hex so it can be shaded again
+      };
+      const EDGE = 'rgba(20,28,40,0.28)';
+      const quad = (pts, fill, stroke = EDGE, lw = 1) => {
+        g.beginPath(); pts.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.closePath();
+        if (fill) { g.fillStyle = fill; g.fill(); } if (stroke) { g.strokeStyle = stroke; g.lineWidth = lw; g.lineJoin = 'round'; g.stroke(); }
+      };
+      // a solid box: top face + the two faces that point at the viewer
+      const box = (x, y, z, w, d, h, color, opts = {}) => {
+        const top = opts.top || shade(color, 1.12), left = opts.left || shade(color, 0.86), right = opts.right || shade(color, 0.7);
+        quad([iso(x, y + d, z), iso(x + w, y + d, z), iso(x + w, y + d, z + h), iso(x, y + d, z + h)], left);
+        quad([iso(x + w, y, z), iso(x + w, y + d, z), iso(x + w, y + d, z + h), iso(x + w, y, z + h)], right);
+        quad([iso(x, y, z + h), iso(x + w, y, z + h), iso(x + w, y + d, z + h), iso(x, y + d, z + h)], top);
+      };
+      const ellIso = (x, y, z, rx, ry, fill, stroke, lw = 1) => {
+        const [sx, sy] = iso(x, y, z); g.beginPath(); g.ellipse(sx, sy, rx, ry, 0, 0, Math.PI * 2);
+        if (fill) { g.fillStyle = fill; g.fill(); } if (stroke) { g.strokeStyle = stroke; g.lineWidth = lw; g.stroke(); }
+      };
+      const text = (s, x, y, color, size = 12, weight = 600, align = 'center') => {
+        g.font = `${weight} ${size}px -apple-system, "Segoe UI", Roboto, sans-serif`;
+        g.textAlign = align; g.textBaseline = 'middle'; g.fillStyle = color; g.fillText(s, x, y);
+      };
+      // a flat rectangle on the back wall (y = 0 plane) or the left wall (x = 0 plane)
+      const onWallY = (x0, x1, z0, z1, fill, stroke) => quad([iso(x0, 0.02, z0), iso(x1, 0.02, z0), iso(x1, 0.02, z1), iso(x0, 0.02, z1)], fill, stroke);
+      const onWallX = (y0, y1, z0, z1, fill, stroke) => quad([iso(0.02, y0, z0), iso(0.02, y1, z0), iso(0.02, y1, z1), iso(0.02, y0, z1)], fill, stroke);
+
+      // ---- the room shell ----
+      function room() {
+        // base slab
+        const T = 0.32;
+        quad([iso(0, RY, 0), iso(RX, RY, 0), iso(RX, RY, -T), iso(0, RY, -T)], '#7a4e2d', 'rgba(0,0,0,0.3)');
+        quad([iso(RX, 0, 0), iso(RX, RY, 0), iso(RX, RY, -T), iso(RX, 0, -T)], '#5e3b21', 'rgba(0,0,0,0.3)');
+        // carpet
+        quad([iso(0, 0), iso(RX, 0), iso(RX, RY), iso(0, RY)], '#7f97ad', null);
+        g.save(); g.beginPath(); [iso(0, 0), iso(RX, 0), iso(RX, RY), iso(0, RY)].forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.closePath(); g.clip();
+        g.strokeStyle = 'rgba(255,255,255,0.05)'; g.lineWidth = 1;
+        for (let i = 1; i < RX; i++) { g.beginPath(); g.moveTo(...iso(i, 0)); g.lineTo(...iso(i, RY)); g.stroke(); }
+        for (let j = 1; j < RY; j++) { g.beginPath(); g.moveTo(...iso(0, j)); g.lineTo(...iso(RX, j)); g.stroke(); }
+        g.restore();
+        // walls (inner faces) + white cap
+        quad([iso(0, 0, 0), iso(RX, 0, 0), iso(RX, 0, WALL), iso(0, 0, WALL)], '#8b98a6', null);
+        quad([iso(0, 0, 0), iso(0, RY, 0), iso(0, RY, WALL), iso(0, 0, WALL)], '#76838f', null);
+        quad([iso(0, 0, WALL), iso(RX, 0, WALL), iso(RX, -0.18, WALL), iso(-0.18, -0.18, WALL)], '#f3f4f6', 'rgba(0,0,0,0.15)');
+        quad([iso(0, 0, WALL), iso(0, RY, WALL), iso(-0.18, RY, WALL), iso(-0.18, -0.18, WALL)], '#e5e7eb', 'rgba(0,0,0,0.15)');
+        quad([iso(RX, -0.18, WALL), iso(RX, 0, WALL), iso(RX, 0, 0), iso(RX, -0.18, 0)], '#d1d5db', 'rgba(0,0,0,0.15)');
+        quad([iso(-0.18, RY, WALL), iso(0, RY, WALL), iso(0, RY, 0), iso(-0.18, RY, 0)], '#d1d5db', 'rgba(0,0,0,0.15)');
+        // skirting
+        onWallY(0, RX, 0, 0.12, '#5b6673', null); onWallX(0, RY, 0, 0.12, '#4f5a66', null);
+        // windows with valances
+        const winY = (x0, x1, val) => {
+          onWallY(x0 - 0.08, x1 + 0.08, 0.95, 2.35, '#f8fafc', EDGE);
+          onWallY(x0, x1, 1.02, 2.25, '#bfe3f7', null);
+          onWallY(x0, x1, 1.02, 1.55, '#d9effa', null);
+          onWallY((x0 + x1) / 2 - 0.03, (x0 + x1) / 2 + 0.03, 1.02, 2.25, '#f8fafc', null);
+          onWallY(x0 - 0.12, x1 + 0.12, 2.25, 2.55, val, EDGE);
+        };
+        const winX = (y0, y1, val) => {
+          onWallX(y0 - 0.08, y1 + 0.08, 0.95, 2.35, '#f1f5f9', EDGE);
+          onWallX(y0, y1, 1.02, 2.25, '#b2d8ee', null);
+          onWallX(y0, y1, 1.02, 1.55, '#cde8f5', null);
+          onWallX((y0 + y1) / 2 - 0.03, (y0 + y1) / 2 + 0.03, 1.02, 2.25, '#f1f5f9', null);
+          onWallX(y0 - 0.12, y1 + 0.12, 2.25, 2.55, val, EDGE);
+        };
+        winY(4.4, 5.8, '#c2413b'); winY(7.4, 8.8, '#1f8a99'); winX(3.6, 4.9, '#c2413b');
+        // framed pictures
+        const picY = (x0, x1, z0, z1, a, b) => { onWallY(x0, x1, z0, z1, '#9a6b3c', EDGE); onWallY(x0 + 0.08, x1 - 0.08, z0 + 0.1, z1 - 0.1, a, null); onWallY(x0 + 0.2, x1 - 0.2, z0 + 0.2, (z0 + z1) / 2, b, null); };
+        const picX = (y0, y1, z0, z1, a, b) => { onWallX(y0, y1, z0, z1, '#9a6b3c', EDGE); onWallX(y0 + 0.08, y1 - 0.08, z0 + 0.1, z1 - 0.1, a, null); onWallX(y0 + 0.2, y1 - 0.2, z0 + 0.2, (z0 + z1) / 2, b, null); };
+        picY(2.5, 3.3, 1.5, 2.4, '#fde68a', '#f97316'); picY(6.2, 6.9, 1.6, 2.4, '#e0f2fe', '#0ea5e9'); picY(9.2, 9.8, 1.5, 2.2, '#fce7f3', '#db2777');
+        picX(1.4, 2.2, 1.5, 2.3, '#ecfccb', '#65a30d'); picX(5.6, 6.3, 1.5, 2.2, '#ede9fe', '#7c3aed');
+        // glass door
+        onWallY(10.15, 11.35, 0, 2.35, '#f8fafc', EDGE); onWallY(10.25, 11.25, 0.08, 2.25, '#cfe8f6', null);
+        onWallY(10.3, 10.36, 0.9, 1.3, '#9ca3af', null);
+        // company sign above the lead
+        onWallY(0.6, 1.9, 2.45, 2.85, '#1e293b', null);
+        g.save(); const [sx, sy] = iso(1.25, 0.02, 2.65); g.translate(sx, sy); g.transform(C, 0.5, 0, 1, 0, 0);
+        text('SOCIAL TEAM', 0, 0, '#e2e8f0', 9, 800); g.restore();
+        // rugs
+        quad([iso(3.8, 3.6), iso(8.6, 3.6), iso(8.6, 5.0), iso(3.8, 5.0)], 'rgba(255,255,255,0.10)', null);
+        quad([iso(0.4, 6.1), iso(3.8, 6.1), iso(3.8, 9.7), iso(0.4, 9.7)], '#3f4654', null); // studio floor
+      }
+
+      // ---- furniture ----
+      const plant = (x, y, s = 1) => {
+        box(x - 0.22 * s, y - 0.22 * s, 0, 0.44 * s, 0.44 * s, 0.42 * s, '#b91c1c', { top: '#5b3a1e' });
+        [[0, 0, 1.0, 13], [-0.15, 0.1, 0.85, 11], [0.15, -0.1, 0.9, 11], [0.05, 0.12, 1.2, 10], [-0.1, -0.12, 1.15, 10]].forEach(([dx, dy, z, r]) => ellIso(x + dx, y + dy, z * s, r * s, r * s * 0.8, '#2f9e44', 'rgba(20,60,30,0.45)'));
+        ellIso(x - 0.05, y - 0.05, 1.3 * s, 6 * s, 4 * s, '#51cf66', null);
+      };
+      const cabinet = (x, y, w = 0.5, d = 0.6, h = 1.1, c = '#e5e7eb') => {
+        box(x, y, 0, w, d, h, c);
+        for (let i = 0; i < 3; i++) quad([iso(x + w, y + 0.1, 0.15 + i * 0.32), iso(x + w, y + d - 0.1, 0.15 + i * 0.32), iso(x + w, y + d - 0.1, 0.4 + i * 0.32), iso(x + w, y + 0.1, 0.4 + i * 0.32)], shade(c, 0.62), null);
+      };
+      function chair(x, y) {
+        ellIso(x, y, 0.02, 14, 7, 'rgba(15,23,42,0.35)', null);
+        box(x - 0.03, y - 0.03, 0.05, 0.06, 0.06, 0.38, '#6b7280');
+        box(x - 0.24, y - 0.22, 0.42, 0.48, 0.46, 0.09, '#2d3748');
+        box(x - 0.24, y - 0.32, 0.5, 0.48, 0.09, 0.62, '#1f2937');
+      }
+      function person(id) {
+        const p = P[id], s = state[id], x = p.px, y = p.py;
+        const bob = s === 'done' && Math.sin(t * 2 + x) > 0.96 ? 0.06 : 0;
+        chair(x, y);
+        box(x - 0.2, y - 0.12, 0.5 + bob, 0.4, 0.26, 0.5, p.color);
+        const [hx, hy] = iso(x, y + 0.02, 1.24 + bob);
+        g.beginPath(); g.arc(hx, hy, 8.5, 0, Math.PI * 2); g.fillStyle = p.skin; g.fill(); g.strokeStyle = EDGE; g.lineWidth = 1; g.stroke();
+        g.beginPath(); g.ellipse(hx, hy - 3, 9, 6.5, 0, Math.PI, Math.PI * 2); g.closePath(); g.fillStyle = p.hair; g.fill();
+        if (p.long) { g.fillStyle = p.hair; g.fillRect(hx - 9, hy - 3, 3.5, 11); g.fillRect(hx + 5.5, hy - 3, 3.5, 11); }
+        g.fillStyle = '#1e293b'; g.fillRect(hx - 3.5, hy + 0.5, 2, 2); g.fillRect(hx + 1.5, hy + 0.5, 2, 2);
+        // arms reach the keyboard; they tap while working, one is raised while waiting on you
+        const k = s === 'working' ? (Math.floor(t * 10 + x) % 2) * 0.04 : 0;
+        box(x - 0.2, y + 0.12, 0.8 + k, 0.1, 0.36, 0.08, p.color);
+        box(x + 0.1, y + 0.12, 0.84 - k, 0.1, 0.36, 0.08, p.color);
+        if (s === 'waiting') box(x + 0.18, y - 0.02, 1.0, 0.1, 0.1, 0.55, p.skin);
+      }
+      function desk(id) {
+        const p = P[id], s = state[id], [x, y, w, d] = p.desk, wood = p.wood || '#b7793f';
+        ellIso(x + w / 2, y + d / 2, 0, w * S * 0.62, d * S * 0.5, 'rgba(15,23,42,0.18)', null);
+        [[x + 0.04, y + 0.04], [x + 0.04, y + d - 0.1], [x + w - 0.1, y + 0.04]].forEach(([lx, ly]) => box(lx, ly, 0, 0.06, 0.06, 0.74, '#9ca3af'));
+        box(x + w - 0.52, y + 0.06, 0, 0.46, d - 0.12, 0.74, shade(wood, 0.85));
+        box(x, y, 0.74, w, d, 0.07, wood, { top: shade(wood, 1.18) });
+        // monitor sits to the side so the face stays visible; it glows in the teammate's colour while working
+        const mx = p.px + 0.62, my = y + 0.12;
+        if (s === 'working') { g.globalAlpha = 0.28 + 0.12 * Math.sin(t * 6); ellIso(mx + 0.25, my, 1.1, 26, 18, p.color, null); g.globalAlpha = 1; }
+        box(mx + 0.2, my + 0.12, 0.81, 0.1, 0.06, 0.12, '#374151');
+        box(mx - 0.08, my, 0.93, 0.6, 0.06, 0.4, '#1f2937');
+        quad([iso(mx - 0.04, my + 0.065, 0.97), iso(mx + 0.48, my + 0.065, 0.97), iso(mx + 0.48, my + 0.065, 1.29), iso(mx - 0.04, my + 0.065, 1.29)], s === 'working' ? (Math.sin(t * 8 + mx) > -0.3 ? shade(p.color, 1.25) : p.color) : '#334155', null);
+        // keyboard, papers, mug
+        box(p.px - 0.25, y + 0.32, 0.81, 0.5, 0.16, 0.02, '#e5e7eb');
+        box(x + 0.15, y + 0.4, 0.81, 0.36, 0.28, 0.02, '#ffffff', { top: '#f8fafc' });
+        box(x + w - 0.3, y + d - 0.32, 0.81, 0.12, 0.12, 0.14, '#f8fafc');
+      }
+
+      // ---- stations ----
+      const draws = [];
+      const add = (depth, fn) => draws.push([depth, fn]);
+      function scene() {
+        draws.length = 0;
+        // background props against the walls
+        add(0.5, () => { cabinet(0.25, 0.08, 1.0, 0.45, 1.9, '#9a6b3c'); for (let i = 0; i < 4; i++) for (let j = 0; j < 3; j++) box(0.32 + i * 0.22, 0.1, 0.25 + j * 0.55, 0.16, 0.38, 0.4, ['#ef4444', '#3b82f6', '#f59e0b', '#10b981'][(i + j) % 4]); });
+        add(1.1, () => plant(0.55, 3.2, 1.0));
+        add(3.7, () => cabinet(3.3, 0.1, 0.55, 0.55, 1.05));
+        add(6.7, () => { box(6.25, 0.1, 0, 0.45, 0.45, 1.0, '#f1f5f9'); box(6.3, 0.15, 1.0, 0.35, 0.35, 0.45, '#bfdbfe'); });
+        add(9.9, () => plant(9.7, 0.6, 1.1));
+        add(12.2, () => plant(11.55, 0.65, 1.0));
+        add(4.3, () => plant(0.55, 4.2 + 0.4, 0.9));
+        // printer by the editor
+        add(17.2, () => { box(11.1, 5.6, 0, 0.7, 0.6, 0.62, '#e5e7eb'); box(11.15, 5.65, 0.62, 0.6, 0.5, 0.18, '#d1d5db'); box(11.25, 5.75, 0.8, 0.4, 0.3, 0.02, '#ffffff'); });
+        // sofa by the editor
+        add(19.6, () => { box(10.0, 9.0, 0, 1.6, 0.6, 0.38, '#e5e7eb'); box(10.0, 9.4, 0.38, 1.6, 0.2, 0.4, '#e5e7eb'); box(10.1, 9.05, 0.38, 0.7, 0.36, 0.14, '#dc2626'); box(10.85, 9.05, 0.38, 0.7, 0.36, 0.14, '#dc2626'); });
+        add(21.0, () => plant(11.5, 9.4, 1.1));
+        add(13.2, () => plant(4.3, 9.3, 0.9));
+
+        Object.keys(P).forEach(id => {
+          const p = P[id], [dx, dy, dw, dd] = p.desk;
+          add(p.px + p.py, () => person(id));
+          add(dx + dw / 2 + dy + dd / 2 + 0.3, () => desk(id));
+        });
+
+        // approver: glass review room, door light red until you approve
+        add(11.9, () => glassY(5.0, 8.4, 6.0, [6.25, 7.15]));
+        add(12.6, () => glassX(5.0, 6.0, 9.7));
+        add(18.3, () => glassX(8.4, 6.0, 9.7));
+        add(12.0, () => approvalStamp());
+        // publisher: studio with ring light, mic and ON AIR sign
+        add(7.4, () => onAir());
+        add(7.8, () => ringLight(0.75, 6.9));
+        add(10.4, () => mic());
+
+        draws.sort((a, b) => a[0] - b[0]).forEach(([, fn]) => fn());
+      }
+      function glassY(x0, x1, y, gap) {
+        const pane = (a, b) => { quad([iso(a, y, 0), iso(b, y, 0), iso(b, y, 2.2), iso(a, y, 2.2)], 'rgba(191,219,254,0.28)', 'rgba(148,163,184,0.9)', 1.2); box(a, y - 0.04, 2.2, b - a, 0.08, 0.06, '#94a3b8'); };
+        pane(x0, gap[0]); pane(gap[1], x1);
+        // sliding door: closed until approved
+        reviewK = reviewK + ((gateOpen ? 1 : 0) - reviewK) * 0.08;
+        const dw = (gap[1] - gap[0]) * (1 - reviewK);
+        if (dw > 0.02) quad([iso(gap[0], y, 0), iso(gap[0] + dw, y, 0), iso(gap[0] + dw, y, 2.1), iso(gap[0], y, 2.1)], 'rgba(148,163,184,0.45)', 'rgba(100,116,139,0.9)', 1.2);
+        const s = state.approver, lit = gateOpen ? '#22c55e' : (s === 'waiting' ? (Math.sin(t * 6) > 0 ? '#ef4444' : '#7f1d1d') : '#ef4444');
+        box(gap[1] + 0.05, y - 0.06, 1.75, 0.22, 0.06, 0.22, '#1f2937');
+        ellIso(gap[1] + 0.16, y, 1.86, 4, 4, lit, null);
+      }
+      let reviewK = 0;
+      function glassX(x, y0, y1) {
+        quad([iso(x, y0, 0), iso(x, y1, 0), iso(x, y1, 2.2), iso(x, y0, 2.2)], 'rgba(191,219,254,0.22)', 'rgba(148,163,184,0.9)', 1.2);
+        box(x - 0.04, y0, 2.2, 0.08, y1 - y0, 0.06, '#94a3b8');
+      }
+      function approvalStamp() {
+        if (!gateOpen) return;
+        const [x, y] = iso(6.2, 8.3, 0.83);
+        g.save(); g.translate(x, y); g.rotate(-0.2);
+        g.strokeStyle = '#16a34a'; g.lineWidth = 2.5; g.strokeRect(-17, -8, 34, 16); text('OK', 0, 0.5, '#16a34a', 11, 800); g.restore();
+      }
+      function onAir() {
+        const on = state.publisher === 'working';
+        onWallX(6.4, 7.7, 2.0, 2.45, on ? '#dc2626' : '#3f3f46', EDGE);
+        g.save(); const [sx, sy] = iso(0.02, 7.05, 2.22); g.translate(sx, sy); g.transform(C, -0.5, 0, 1, 0, 0);
+        text('ON AIR', 0, 0, on ? '#ffffff' : '#a1a1aa', 11, 800); g.restore();
+        // acoustic panels
+        for (let i = 0; i < 3; i++) onWallX(8.0 + i * 0.55, 8.45 + i * 0.55, 0.8, 1.9, i % 2 ? '#52525b' : '#45454d', null);
+        if (on) for (let i = 0; i < 3; i++) { const ph = (t * 0.8 + i / 3) % 1; g.globalAlpha = 0.5 * (1 - ph); ellIso(2.1, 7.2, 1.3, 30 + ph * 70, 18 + ph * 40, null, P.publisher.color, 2); g.globalAlpha = 1; }
+      }
+      function ringLight(x, y) {
+        box(x - 0.03, y - 0.03, 0, 0.06, 0.06, 1.7, '#6b7280');
+        ellIso(x, y, 0.02, 12, 6, 'rgba(15,23,42,0.3)', null);
+        const [sx, sy] = iso(x, y, 1.95); g.beginPath(); g.ellipse(sx, sy, 9, 13, 0, 0, Math.PI * 2);
+        g.lineWidth = 4; g.strokeStyle = state.publisher === 'working' ? '#fde68a' : '#d1d5db'; g.stroke();
+      }
+      function mic() {
+        const [a, b] = [iso(1.35, 7.9, 0.82), iso(1.6, 7.6, 1.25)];
+        g.strokeStyle = '#374151'; g.lineWidth = 3; g.beginPath(); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); g.stroke();
+        g.fillStyle = '#111827'; g.beginPath(); g.roundRect(b[0] - 4, b[1] - 9, 8, 13, 4); g.fill();
+      }
+
+      // ---- overlays: status card, name plates, badges, folders ----
+      function statusCard() {
+        let small = 'OFFICE OPEN', big = 'Give the team a topic';
+        const working = ORDER.find(id => state[id] === 'working');
+        if (state.approver === 'waiting') { small = 'WAITING ON YOU'; big = 'Approve or Revise'; }
+        else if (working) { small = `STAGE ${ORDER.indexOf(working) + 1} OF 6`; big = P[working].name; }
+        else if (runStatus === 'complete') { small = 'RUN COMPLETE'; big = 'Saved in runs/'; }
+        else if (runStatus === 'stopped') { small = 'RUN STOPPED'; big = 'See the task board'; }
+        const accent = state.approver === 'waiting' ? '#fbbf24' : working ? '#60a5fa' : runStatus === 'complete' ? '#4ade80' : '#94a3b8';
+        g.fillStyle = 'rgba(15,23,42,0.92)'; g.beginPath(); g.roundRect(18, 18, 232, 64, 10); g.fill();
+        g.fillStyle = accent; g.beginPath(); g.roundRect(18, 18, 5, 64, [10, 0, 0, 10]); g.fill();
+        text(small, 36, 38, accent, 10, 800, 'left');
+        text(big, 36, 61, '#f8fafc', 17, 700, 'left');
+      }
+      const BADGE = { working: ['#f59e0b', '…'], done: ['#16a34a', '✓'], waiting: ['#eab308', '?'], failed: ['#dc2626', '!'], blocked: ['#dc2626', '!'] };
+      function plate(id) {
+        const p = P[id], [x, y0] = iso(p.px, p.py, 2.15), s = state[id], y = y0 + (s === 'working' ? Math.sin(t * 3) * 1.5 : 0);
+        g.font = '600 12px -apple-system, "Segoe UI", Roboto, sans-serif';
+        const w = g.measureText(p.name).width + 24, b = BADGE[s];
+        g.fillStyle = 'rgba(15,23,42,0.18)'; g.beginPath(); g.roundRect(x - w / 2, y - 10, w, 22, 11); g.fill();
+        g.fillStyle = '#ffffff'; g.beginPath(); g.roundRect(x - w / 2, y - 12, w, 22, 11); g.fill();
+        g.strokeStyle = 'rgba(30,41,59,0.2)'; g.lineWidth = 1; g.stroke();
+        g.fillStyle = p.color; g.beginPath(); g.arc(x - w / 2 + 11, y - 1, 3.5, 0, Math.PI * 2); g.fill();
+        text(p.name, x + 5, y - 0.5, '#1e293b', 12);
+        // pointer down to the person
+        g.fillStyle = '#ffffff'; g.beginPath(); g.moveTo(x - 5, y + 10); g.lineTo(x + 5, y + 10); g.lineTo(x, y + 16); g.closePath(); g.fill();
+        if (b) {
+          const bx = x - w / 2 - 6, by = y - 1;
+          g.fillStyle = b[0]; g.beginPath(); g.arc(bx, by, 12, 0, Math.PI * 2); g.fill(); g.strokeStyle = '#ffffff'; g.lineWidth = 2.5; g.stroke();
+          text(s === 'working' ? '.'.repeat(1 + Math.floor(t * 3) % 3) : b[1], bx, by + (s === 'working' ? -3 : 0.5), '#ffffff', 13, 800);
+        }
+        if (inbox[id]) { g.fillStyle = '#1e293b'; g.beginPath(); g.roundRect(x + w / 2 - 6, y - 22, 22, 15, 7); g.fill(); text(String(inbox[id]), x + w / 2 + 5, y - 14.5, '#ffffff', 10, 800); }
+      }
+      function drawFolders(now) {
+        folders = folders.filter(f => now - f.start < f.dur);
+        folders.forEach(f => {
+          const k = Math.min(1, (now - f.start) / f.dur), e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+          const a = P[f.from].spot, b = P[f.to].spot, fx = a[0] + (b[0] - a[0]) * e, fy = a[1] + (b[1] - a[1]) * e;
+          const hop = Math.sin(k * Math.PI) * 0.6;
+          ellIso(fx, fy, 0.01, 12, 6, 'rgba(15,23,42,0.3)', null);
+          box(fx - 0.25, fy - 0.18, 0.5 + hop, 0.5, 0.36, 0.06, '#f6c96b', { top: '#f8d68a' });
+          box(fx - 0.25, fy - 0.18, 0.56 + hop, 0.2, 0.08, 0.04, '#e9b44c');
+        });
+      }
+
+      // ---- frame loop (stops once the 3D office takes over) ----
+      let suspended = false;
+      function frame(ms) {
+        if (suspended) return;
+        t = ms / 1000;
+        g.clearRect(0, 0, W, H);
+        room();
+        scene();
+        drawFolders(ms);
+        Object.keys(P).forEach(plate);
+        statusCard();
+        requestAnimationFrame(frame);
+      }
+      requestAnimationFrame(frame);
+
+      // ---- clicks: a desk opens that teammate's card ----
+      const hit = (e) => {
+        const r = cv.getBoundingClientRect(), x = (e.clientX - r.left) * W / r.width, y = (e.clientY - r.top) * H / r.height;
+        return ORDER.find(id => { const [sx, sy] = iso(P[id].px + 0.3, P[id].py + 0.4, 0.9); return Math.abs(sx - x) < 60 && Math.abs(sy - y) < 55; });
+      };
+      cv.addEventListener('click', e => { const id = hit(e); if (id) openModal(team.find(m => m.id === TEAM_ID[id])); });
+      cv.addEventListener('mousemove', e => { cv.style.cursor = hit(e) ? 'pointer' : 'default'; });
+
+      // ---- task board & activity feed ----
+      const LABEL = { idle: 'To do', working: 'Working', done: 'Done', waiting: 'Waiting on you', failed: 'Failed', blocked: 'Blocked' };
+      const SERVER_STATE = { 'todo': 'idle', 'in-progress': 'working', 'done': 'done', 'waiting-on-you': 'waiting', 'failed': 'failed', 'blocked': 'blocked' };
+      const hhmm = (d) => d.toTimeString().slice(0, 5);
+      function renderPanel() {
+        const run = localRun || serverRun;
+        document.getElementById('officeRun').textContent = run ? `Run: ${run.topic}` : 'No run yet. Enter a niche and topic above.';
+        document.getElementById('officeTasks').innerHTML = ORDER.map((id, i) =>
+          `<div class="task-row"><span class="who"><span class="dot" style="background:${P[id].color}"></span>${i + 1}. ${P[id].name}</span><span class="chip ${state[id]}">${LABEL[state[id]]}</span></div>`).join('');
+        const ul = document.getElementById('officeFeed');
+        ul.innerHTML = feed.length ? feed.slice(-14).reverse().map(f => `<li><time>${f.time}</time>${escapeHtml(f.text)}</li>`).join('') : '<li class="muted">Quiet office. Nothing has happened yet.</li>';
+        document.getElementById('officeHiveNote').innerHTML = liveMode
+          ? 'Shared files: <code>office/board.md</code> <code>tasks.json</code> <code>log.jsonl</code> <code>agents/*/inbox</code>'
+          : 'Demo mode: the office files are written only while <code>server.py</code> runs.';
+      }
+      const say = (msg) => { if (!liveMode) feed.push({ time: hhmm(new Date()), text: msg }); renderPanel(); };
+      const send = (from, to) => folders.push({ from, to, start: performance.now(), dur: 2000 });
+
+      // live mode: mirror the server's office files (task ledger, mailbox counts, event log)
+      const EVENT_TEXT = { stage_started: (n) => `${n} started work`, stage_done: (n) => `${n} finished and handed off`, stage_failed: (n) => `${n} hit an error`, blocked: (n) => `${n} was blocked (no approval)` };
+      async function poll() {
+        if (!liveMode) return;
+        try {
+          const snap = await (await fetch('/api/office')).json();
+          inbox = snap.inbox || {};
+          serverRun = snap.current;
+          feed = (snap.log || []).map(ev => {
+            const name = ev.agent && P[ev.agent] ? P[ev.agent].name : 'Team';
+            const msg = ev.event === 'decision' ? `You chose: ${ev.detail}` : (EVENT_TEXT[ev.event] || (() => ev.event))(name);
+            return { time: (ev.ts || '').slice(11, 16), text: msg };
+          });
+          if (!active && serverRun) { // nothing running on this page: show the last run as the server recorded it
+            localRun = null;
+            serverRun.tasks.forEach(tk => { state[tk.stage] = SERVER_STATE[tk.status] || (tk.status.startsWith('decision') ? 'blocked' : 'idle'); });
+            gateOpen = serverRun.tasks.find(tk => tk.stage === 'approver').status === 'done';
+            runStatus = serverRun.status === 'complete' ? 'complete' : serverRun.status === 'running' ? 'none' : 'stopped';
+          }
+          renderPanel();
+        } catch (_) { /* server not reachable: keep the local view */ }
+      }
+      setInterval(poll, 2500); setTimeout(poll, 600);
+      renderPanel();
+
+      // ---- hooks called by the pipeline ----
+      return {
+        startRun(topicName) {
+          Object.keys(state).forEach(k => state[k] = 'idle'); gateOpen = false; runStatus = 'none';
+          localRun = { topic: topicName }; active = true; state.lead = 'working'; send('lead', 'researcher'); say(`Team Lead opened a run: ${topicName}`);
+        },
+        stage(id, status) {
+          if (!P[id]) return;
+          const s = { running: 'working', done: 'done', failed: 'failed', pending: 'idle' }[status] || 'idle';
+          if (state[id] === s) return;
+          state[id] = s;
+          if (s === 'working') say(`${P[id].name} started work`);
+          if (s === 'failed') say(`${P[id].name} hit an error`);
+          if (s === 'done' && id !== 'approver' && id !== 'publisher') { send(id, ORDER[ORDER.indexOf(id) + 1]); say(`${P[id].name} finished and handed off`); }
+          renderPanel();
+        },
+        waiting() { state.approver = 'waiting'; state.lead = 'waiting'; say('Approver is waiting for your decision'); },
+        decided(decision) {
+          if (decision === 'approved') { gateOpen = true; state.approver = 'done'; state.lead = 'working'; send('approver', 'publisher'); say('You approved. The review room door is open'); }
+          else { state.approver = 'blocked'; state.lead = 'idle'; say(decision === 'error' ? 'Decision could not be logged' : 'You asked for a revision'); }
+        },
+        endRun(ok) { state.lead = ok ? 'done' : 'idle'; runStatus = ok ? 'complete' : 'stopped'; say(ok ? 'Run complete' : 'Run stopped'); active = false; setTimeout(poll, 300); },
+        // for the 3D renderer: read-only view of the office, and a way to retire the 2D canvas
+        snapshot: () => ({ state, gateOpen, runStatus, folders, inbox, P, ORDER }),
+        suspend2D() { suspended = true; },
+        openTeammate(id) { const m = team.find(x => x.id === TEAM_ID[id]); if (m) openModal(m); },
+      };
+    })();
+    window.Office = Office;
+
     /* ============ WIRE UP ============ */
     btnStart.addEventListener('click', runPipeline);
-    document.getElementById('btnApprove').addEventListener('click', () => {
-      setStageStatus('approver', 'done');
-      const next = STAGE_NAMES.findIndex(s => s.id === 'approver') + 1;
-      showStage(next);
-      runStage('publisher', () => publisherStage(pipelineData.editor));
-    });
-    document.getElementById('btnRevise').addEventListener('click', () => {
-      alert('Revision sent back to Content Writer. (In a real run, the writer would regenerate and re-submit to the Approver.)');
-    });
+
+    // Resolves only when the user clicks Approve ('approved') or Request revision ('revise').
+    // The buttons exist only after the approver stage renders, so wire them up here, not at page load.
+    function waitForApproval() {
+      return new Promise(resolve => {
+        const approve = document.getElementById('btnApprove');
+        const revise = document.getElementById('btnRevise');
+        const decide = async (decision) => {
+          approve.disabled = true;
+          revise.disabled = true;
+          const note = document.createElement('p');
+          note.style.cssText = 'margin-top:0.5rem; font-size:0.85rem; white-space:pre-wrap; color:' + (decision === 'approved' ? 'var(--accent-green)' : 'var(--accent-orange)');
+          approve.parentElement.after(note);
+          if (liveMode) {
+            try {
+              const r = await postJSON('/api/decision', { run_id: runId, decision });
+              note.innerText = 'Logged to approvals.log:\n' + r.logged;
+            } catch (e) {
+              // If the decision can't be logged, treat it as NOT approved.
+              note.style.color = 'var(--accent-red)';
+              note.innerText = 'Could not log decision (' + e.message + '). Nothing will be published.';
+              return resolve('error');
+            }
+          } else {
+            note.innerText = `[${new Date().toLocaleString()}] DECISION: ${decision} | Content: ${topic} (demo — not written to disk)`;
+          }
+          pipelineData.approval = { decision, at: new Date().toISOString(), topic };
+          resolve(decision);
+        };
+        approve.addEventListener('click', () => decide('approved'), { once: true });
+        revise.addEventListener('click', () => decide('revised'), { once: true });
+      });
+    }
 
     function copyOutput() {
       const content = document.getElementById('fullOutputContent');
@@ -1443,7 +2217,14 @@ Log entry
     }
 
     initPipeline();
+    detectMode().then(checkResume);
   </script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
+
+  <!-- Pixel-art office (no external libraries). office3d.js holds an alternative three.js version, not loaded. -->
+  <script src="office-pixel.js"></script>
 
   <script src="https://cdn.jsdelivr.net/npm/docx@7.8.4/build/index.js"></script>
   <script>
